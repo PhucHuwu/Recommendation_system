@@ -1,5 +1,9 @@
 # Movie Recommendation System
 
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 A comprehensive recommendation system built using Content-Based Filtering and Collaborative Filtering techniques on the MovieLens dataset.
 
 ## Table of Contents
@@ -74,32 +78,32 @@ This project implements an end-to-end movie recommendation system that combines 
 ```
 Recommendation_system/
 ├── data/
-│   ├── raw/                        # Original MovieLens dataset
-│   ├── processed/                  # Processed data and features
-│   └── models/                     # Trained model files (~2.3GB)
+│   ├── raw/                               # Original MovieLens dataset
+│   ├── processed/                         # Processed data and features
+│   └── models/                            # Trained model files (~2.3GB)
 ├── notebooks/
-│   ├── 01_data_collection.ipynb    # Data acquisition and initial exploration
-│   ├── 02_data_cleaning.ipynb      # Data cleaning and preprocessing
-│   ├── 03_eda_visualization.ipynb  # Exploratory data analysis
-│   ├── 04_model_building.ipynb     # Model training and comparison
-│   └── 05_model_evaluation.ipynb   # Performance evaluation
+│   ├── 01_data_collection.ipynb           # Data acquisition and initial exploration
+│   ├── 02_data_cleaning.ipynb             # Data cleaning and preprocessing
+│   ├── 03_eda_visualization.ipynb         # Exploratory data analysis
+│   ├── 04_model_building.ipynb            # Model training and comparison
+│   └── 05_model_evaluation.ipynb          # Performance evaluation
 ├── src/
 │   ├── data_processing/
-│   │   ├── collector.py            # Data collection utilities
-│   │   ├── cleaner.py              # Data cleaning methods
-│   │   └── preprocessor.py         # Feature engineering
+│   │   ├── collector.py                   # Data collection utilities
+│   │   ├── cleaner.py                     # Data cleaning methods
+│   │   └── preprocessor.py                # Feature engineering
 │   ├── models/
-│   │   ├── content_based.py        # Content-based recommender
-│   │   └── collaborative_filtering.py  # Collaborative filtering
+│   │   ├── content_based.py               # Content-based recommender
+│   │   └── collaborative_filtering.py     # Collaborative filtering
 │   └── evaluation/
-│       └── metrics.py              # Evaluation metrics
+│       └── metrics.py                     # Evaluation metrics
 ├── web_app/
-│   ├── app.py                      # Streamlit web application
-│   ├── requirements.txt            # Web app dependencies
-│   └── README.md                   # Web app documentation
-├── reports/                        # Evaluation results and visualizations
-├── tests/                          # Unit tests
-└── requirements.txt                # Project dependencies
+│   ├── app.py                             # Streamlit web application
+│   ├── requirements.txt                   # Web app dependencies
+│   └── README.md                          # Web app documentation
+├── reports/                               # Evaluation results and visualizations
+├── tests/                                 # Unit tests
+└── requirements.txt                       # Project dependencies
 ```
 
 ## Installation
@@ -389,8 +393,3 @@ This project was developed as part of a final project for a Recommendation Syste
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
----
-
-**Project Status**: Complete and Production-Ready  
-**Last Updated**: December 2025  
-**Version**: 1.0.0
