@@ -1,0 +1,25 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Jupyter Notebooks - use nbstripout as filter (requires: pip install nbstripout && nbstripout --install)
+*.ipynb filter=nbstripout
+*.ipynb diff=ipynb
+
+# Force batch scripts to always use CRLF line endings
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Force shell scripts to always use LF line endings
+*.sh text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.pkl binary
+*.h5 binary
+*.model binary
+*.joblib binary
