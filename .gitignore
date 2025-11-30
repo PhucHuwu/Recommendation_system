@@ -174,4 +174,3 @@ tmp/
 # Keep important markdown files
 !README.md
 !implementation_plan.md
-!require.md
