@@ -25,274 +25,46 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS - Enhanced Premium Design
+# Custom CSS
 st.markdown("""
 <style>
-    /* Import Google Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-    
-    /* Global Styles */
-    * {
-        font-family: 'Poppins', sans-serif;
-    }
-    
-    /* Main Container Background */
-    .main {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        background-attachment: fixed;
-    }
-    
-    /* Header Styles with Gradient */
     .main-header {
-        font-size: 3.5rem;
-        font-weight: 700;
+        font-size: 3rem;
+        font-weight: bold;
         text-align: center;
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 0.5rem;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-        animation: fadeInDown 0.8s ease-in;
-    }
-    
-    .sub-header {
-        font-size: 1.3rem;
-        text-align: center;
-        color: #ffffff;
-        margin-bottom: 2rem;
-        font-weight: 300;
-        animation: fadeInUp 0.8s ease-in;
-    }
-    
-    /* Movie Card with Glassmorphism */
-    .movie-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        padding: 1.5rem;
-        border-radius: 20px;
-        margin-bottom: 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .movie-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-    }
-    
-    .movie-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 5px;
-        height: 100%;
-        background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%);
-    }
-    
-    /* Metric Cards */
-    .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1rem;
-        border-radius: 15px;
-        text-align: center;
-        margin: 0.5rem;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease;
-    }
-    
-    .metric-card:hover {
-        transform: scale(1.05);
-    }
-    
-    /* Buttons */
-    .stButton>button {
-        width: 100%;
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
-        border-radius: 25px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        border: none;
-        box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
-        transition: all 0.3s ease;
-        font-size: 1rem;
-    }
-    
-    .stButton>button:hover {
-        box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
-        transform: translateY(-2px);
-    }
-    
-    /* Sidebar Styling */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    [data-testid="stSidebar"] .stMarkdown {
-        color: white;
-    }
-    
-    /* Input Fields */
-    .stTextInput>div>div>input {
-        border-radius: 15px;
-        border: 2px solid #e0e0e0;
-        padding: 0.75rem 1rem;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-    
-    .stTextInput>div>div>input:focus {
-        border-color: #f5576c;
-        box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.1);
-    }
-    
-    /* Select Boxes */
-    .stSelectbox>div>div {
-        border-radius: 15px;
-        border: 2px solid #e0e0e0;
-    }
-    
-    /* Info Boxes */
-    .stAlert {
-        border-radius: 15px;
-        border-left: 5px solid #667eea;
-        background-color: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
-    }
-    
-    /* Success/Warning/Error Messages */
-    .stSuccess {
-        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-        color: #0d47a1;
-        border-radius: 15px;
-        padding: 1rem;
-        font-weight: 500;
-    }
-    
-    .stWarning {
-        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-        color: #e65100;
-        border-radius: 15px;
-        padding: 1rem;
-        font-weight: 500;
-    }
-    
-    .stError {
-        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-        color: #b71c1c;
-        border-radius: 15px;
-        padding: 1rem;
-        font-weight: 500;
-    }
-    
-    /* Dataframe Styling */
-    .dataframe {
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Animations */
-    @keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes pulse {
-        0%, 100% {
-            opacity: 1;
-        }
-        50% {
-            opacity: 0.8;
-        }
-    }
-    
-    /* Spinner */
-    .stSpinner > div {
-        border-top-color: #f5576c !important;
-    }
-    
-    /* Expander */
-    .streamlit-expanderHeader {
-        background-color: rgba(255, 255, 255, 0.9);
-        border-radius: 15px;
-        font-weight: 600;
-    }
-    
-    /* Metrics (Streamlit native) */
-    [data-testid="stMetricValue"] {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #667eea;
-    }
-    
-    [data-testid="stMetricLabel"] {
-        font-weight: 600;
-        color: #666;
-    }
-    
-    /* Divider */
-    hr {
-        margin: 2rem 0;
-        border: none;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #667eea, transparent);
-    }
-    
-    /* Card Title Styles */
-    .card-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .card-subtitle {
-        font-size: 1rem;
-        color: #666;
+        color: #FF6B6B;
         margin-bottom: 1rem;
     }
-    
-    /* Badge Styles */
-    .badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        margin-right: 0.5rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+    .sub-header {
+        font-size: 1.5rem;
+        text-align: center;
+        color: #4ECDC4;
+        margin-bottom: 2rem;
     }
-    
-    /* Progress Bar */
-    .stProgress > div > div {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    .movie-card {
+        background-color: #f0f2f6;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        border-left: 5px solid #FF6B6B;
+    }
+    .metric-card {
+        background-color: #e8f4f8;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+        margin: 0.5rem;
+    }
+    .stButton>button {
+        width: 100%;
+        background-color: #FF6B6B;
+        color: white;
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        font-weight: bold;
+    }
+    .stButton>button:hover {
+        background-color: #ff5252;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -353,117 +125,73 @@ def load_models():
     return models
 
 
-def display_movie_card(movie_data, show_similarity=False, similarity_score=None, rank=None):
-    """Display an enhanced movie card with details."""
+def display_movie_card(movie_data, show_similarity=False, similarity_score=None):
+    """Display a movie card with details."""
     with st.container():
         st.markdown('<div class="movie-card">', unsafe_allow_html=True)
         
-        # Header with rank badge
-        if rank:
-            st.markdown(f'<span class="badge">#{rank}</span>', unsafe_allow_html=True)
+        col1, col2 = st.columns([3, 1])
         
-        # Title with larger emphasis
-        st.markdown(f'<div class="card-title">🎬 {movie_data["title_clean"]}</div>', unsafe_allow_html=True)
+        with col1:
+            st.markdown(f"### 🎬 {movie_data['title_clean']}")
+            st.markdown(f"**Year:** {int(movie_data['year']) if pd.notna(movie_data['year']) else 'Unknown'}")
+            st.markdown(f"**Genres:** {movie_data['genres']}")
         
-        # Year and genres on same line
-        year_str = int(movie_data['year']) if pd.notna(movie_data['year']) else 'Unknown'
-        st.markdown(f'<div class="card-subtitle">📅 {year_str} • 🎭 {movie_data["genres"]}</div>', unsafe_allow_html=True)
-        
-        # Metrics in columns
-        metric_cols = st.columns(3)
-        
-        with metric_cols[0]:
+        with col2:
             if pd.notna(movie_data['avg_rating']):
-                rating_val = movie_data['avg_rating']
-                # Star rating visual
-                stars = "⭐" * int(rating_val)
-                st.markdown(f"**Rating**")
-                st.markdown(f"{stars} {rating_val:.2f}/5.0")
-        
-        with metric_cols[1]:
+                st.metric("⭐ Rating", f"{movie_data['avg_rating']:.2f}/5.0")
             if pd.notna(movie_data['num_ratings']):
-                st.markdown(f"**Popularity**")
-                st.markdown(f"👥 {int(movie_data['num_ratings']):,} ratings")
-        
-        with metric_cols[2]:
+                st.metric("👥 Ratings", f"{int(movie_data['num_ratings']):,}")
             if show_similarity and similarity_score is not None:
-                st.markdown(f"**Match Score**")
-                # Progress bar visual for similarity
-                match_percent = int(similarity_score * 100)
-                st.markdown(f"🎯 {similarity_score:.3f}")
-                st.progress(similarity_score)
+                st.metric("🎯 Similarity", f"{similarity_score:.3f}")
         
         st.markdown('</div>', unsafe_allow_html=True)
 
 
 def main():
-    # Enhanced Header with Animation
+    # Header
     st.markdown('<p class="main-header">🎬 Movie Recommendation System</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-header">✨ Discover your next favorite movie with AI-powered recommendations! ✨</p>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-header">Discover your next favorite movie!</p>', unsafe_allow_html=True)
     
     # Load data and models
-    with st.spinner('🔄 Loading data and models...'):
+    with st.spinner('Loading data and models...'):
         movies, ratings = load_data()
         models = load_models()
     
-    # Enhanced Sidebar
-    st.sidebar.markdown("### ⚙️ Control Panel")
+    # Sidebar
+    st.sidebar.title("⚙️ Settings")
     st.sidebar.markdown("---")
     
-    # Mode selection with better labels
+    # Mode selection
     mode = st.sidebar.radio(
-        "🎯 Select Mode:",
-        ["🔍 Search & Recommend", "👤 User Recommendations", "📊 Model Comparison"],
-        help="Choose how you want to get recommendations"
+        "Select Mode:",
+        ["🔍 Search & Recommend", "👤 User Recommendations", "📊 Model Comparison"]
     )
     
     st.sidebar.markdown("---")
     
-    # Model selection with emojis
+    # Model selection
     model_name = st.sidebar.selectbox(
-        "🤖 Recommendation Model:",
-        list(models.keys()),
-        help="Different models use different approaches"
+        "Choose Recommendation Model:",
+        list(models.keys())
     )
-    
-    # Show model info
-    with st.sidebar.expander("ℹ️ Model Info"):
-        if "TF-IDF" in model_name:
-            st.info("Uses text similarity from titles and genres")
-        elif "Genre" in model_name:
-            st.info("Matches movies with same genres")
-        elif "Combined" in model_name:
-            st.info("Uses genres + ratings + metadata")
-        elif "Item-Based" in model_name:
-            st.info("Finds similar movies based on user ratings")
-        elif "User-Based" in model_name:
-            st.info("Recommends based on similar users")
     
     # Number of recommendations
     n_recommendations = st.sidebar.slider(
-        "📊 Number of Results:",
+        "Number of Recommendations:",
         min_value=5,
         max_value=20,
         value=10,
-        step=5,
-        help="How many recommendations to show"
+        step=5
     )
     
     st.sidebar.markdown("---")
-    
-    # Dataset stats with metrics
-    st.sidebar.markdown("### 📈 Dataset Statistics")
-    col1, col2 = st.sidebar.columns(2)
-    with col1:
-        st.metric("🎬 Movies", f"{len(movies):,}")
-        st.metric("⭐ Ratings", f"{len(ratings):,}")
-    with col2:
-        st.metric("👥 Users", f"{ratings['userId'].nunique():,}")
-        avg_rating = ratings['rating'].mean()
-        st.metric("📊 Avg Rating", f"{avg_rating:.2f}")
-    
-    st.sidebar.markdown("---")
-    st.sidebar.success("✅ All systems ready!")
+    st.sidebar.info(f"""
+    **Dataset Info:**
+    - Movies: {len(movies):,}
+    - Ratings: {len(ratings):,}
+    - Users: {ratings['userId'].nunique():,}
+    """)
     
     # Main content based on mode
     if mode == "🔍 Search & Recommend":
@@ -532,12 +260,13 @@ def search_and_recommend(movies, models, model_name, n_recommendations):
                         else:
                             recs = model.get_recommendations(selected_movie_id, n=n_recommendations)
                         
-                        # Display recommendations with enhanced cards
+                        # Display recommendations
                         for idx, (_, rec) in enumerate(recs.iterrows(), 1):
+                            st.markdown(f"**{idx}. Recommendation**")
                             movie_data = movies[movies['movieId'] == rec['movieId']].iloc[0]
                             
                             similarity_score = rec.get('similarity_score', rec.get('predicted_rating', None))
-                            display_movie_card(movie_data, show_similarity=True, similarity_score=similarity_score, rank=idx)
+                            display_movie_card(movie_data, show_similarity=True, similarity_score=similarity_score)
                     
                     except Exception as e:
                         st.error(f"Error generating recommendations: {str(e)}")
@@ -582,10 +311,11 @@ def user_recommendations(movies, ratings, models, model_name, n_recommendations)
                     st.warning("Please select 'Collaborative (User-Based)' model for user recommendations.")
                     return
                 
-                # Display recommendations with enhanced cards
+                # Display recommendations
                 for idx, (_, rec) in enumerate(recs.iterrows(), 1):
+                    st.markdown(f"**{idx}. Recommendation**")
                     movie_data = movies[movies['movieId'] == rec['movieId']].iloc[0]
-                    display_movie_card(movie_data, show_similarity=True, similarity_score=rec['predicted_rating'], rank=idx)
+                    display_movie_card(movie_data, show_similarity=True, similarity_score=rec['predicted_rating'])
             
             except Exception as e:
                 st.error(f"Error: {str(e)}")
