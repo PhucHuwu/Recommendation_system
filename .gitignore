@@ -169,8 +169,7 @@ logs/
 temp/
 tmp/
 
-*.md
-
 # Keep important markdown files
 !README.md
 !implementation_plan.md
+*.md
