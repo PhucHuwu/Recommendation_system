@@ -135,15 +135,13 @@ dmypy.json
 Thumbs.db
 desktop.ini
 
-# Data files (keep structure but ignore large datasets)
+# Data files - raw data ignored, processed data kept for deployment
 data/raw/*
 !data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
 
-# Model files (trained models can be large)
+# Model files (trained models can be large - build on-the-fly instead)
 data/models/*
-!data/models/.gitkeep
+!data/models/models_metadata.json
 *.pkl
 *.h5
 *.model

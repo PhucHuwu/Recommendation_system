@@ -1,0 +1,35 @@
+{
+  "training_date": "2025-12-01 00:43:02.983894",
+  "models": {
+    "content_based_tfidf": {
+      "path": "../data/models/content_based_tfidf.pkl",
+      "type": "Content-Based",
+      "features": "TF-IDF (200 features)",
+      "num_movies": 9742
+    },
+    "content_based_genre": {
+      "path": "../data/models/content_based_genre.pkl",
+      "type": "Content-Based",
+      "features": "Genre Binary Features",
+      "num_movies": 9742
+    },
+    "content_based_combined": {
+      "path": "../data/models/content_based_combined.pkl",
+      "type": "Content-Based",
+      "features": "Genre + Numeric Features",
+      "num_movies": 9742
+    },
+    "collaborative_item_based": {
+      "path": "../data/models/collaborative_item_based.pkl",
+      "type": "Collaborative Filtering (Item-Based)",
+      "matrix_shape": "(606, 450)",
+      "sparsity": "84.83%"
+    },
+    "collaborative_user_based": {
+      "path": "../data/models/collaborative_user_based.pkl",
+      "type": "Collaborative Filtering (User-Based)",
+      "matrix_shape": "(606, 450)",
+      "sparsity": "84.83%"
+    }
+  }
+}
