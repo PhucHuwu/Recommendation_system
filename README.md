@@ -369,10 +369,6 @@ def get_recommendations(self, movie_id: int, n: int = 10) -> pd.DataFrame:
     """
 ```
 
-## Contributing
-
-This project was developed as part of a final project for a Recommendation Systems course.
-
 ### Author
 
 PhucHuwu
