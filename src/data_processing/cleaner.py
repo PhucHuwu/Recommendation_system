@@ -331,7 +331,7 @@ def main():
     print("\nCleaned Data:")
     print(df)
     
-    print("\n✅ Cleaner test completed!")
+    print("\nCleaner test completed!")
 
 
 if __name__ == "__main__":

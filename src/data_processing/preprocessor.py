@@ -380,7 +380,7 @@ def main():
     print("\nProcessed Data (first few columns):")
     print(movies_df[['movieId', 'title_clean', 'year', 'decade', 'era']].head())
     
-    print("\n✅ Preprocessor test completed!")
+    print("\nPreprocessor test completed!")
 
 
 if __name__ == "__main__":

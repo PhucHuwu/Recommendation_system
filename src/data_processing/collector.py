@@ -207,8 +207,8 @@ def main():
     for key, value in info.items():
         print(f"{key}: {value}")
     
-    print("\n✅ Data collection completed successfully!")
-    print(f"📁 Data saved to: {dataset_dir}")
+    print("\nData collection completed successfully!")
+    print(f"Data saved to: {dataset_dir}")
 
 
 if __name__ == "__main__":

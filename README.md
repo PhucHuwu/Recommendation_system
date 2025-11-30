@@ -111,14 +111,14 @@ python web_app/app.py
 
 ### Core Features
 
-✅ Thu thập dữ liệu từ MovieLens  
-✅ Làm sạch và preprocessing  
-✅ EDA với visualizations  
-✅ Content-Based Filtering  
-✅ Collaborative Filtering  
-✅ Hybrid Recommendation  
-✅ Đánh giá mô hình (RMSE, MAE, Precision@K, Recall@K)  
-✅ Web interface
+Thu thập dữ liệu từ MovieLens  
+Làm sạch và preprocessing  
+EDA với visualizations  
+Content-Based Filtering  
+Collaborative Filtering  
+Hybrid Recommendation  
+Đánh giá mô hình (RMSE, MAE, Precision@K, Recall@K)  
+Web interface
 
 ### Advanced Features (Optional)
 
