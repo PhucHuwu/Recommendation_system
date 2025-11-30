@@ -327,39 +327,39 @@ Recommendation_system/
 
 ## Kế Hoạch Thực Hiện (Timeline)
 
-### Phase 1: Setup & Data Collection (Tuần 1)
+### Phase 1: Setup & Data Collection
 
 -   [ ] Setup môi trường, cấu trúc project
 -   [ ] Thu thập dataset
 -   [ ] Preliminary data exploration
 
-### Phase 2: Data Processing (Tuần 2)
+### Phase 2: Data Processing
 
 -   [ ] Làm sạch dữ liệu
 -   [ ] Feature engineering
 -   [ ] Vectorization
 
-### Phase 3: EDA & Visualization (Tuần 3)
+### Phase 3: EDA & Visualization
 
 -   [ ] Phân tích dữ liệu
 -   [ ] Tạo visualizations
 -   [ ] Document insights
 
-### Phase 4: Model Development (Tuần 4-5)
+### Phase 4: Model Development
 
 -   [ ] Implement content-based
 -   [ ] Implement collaborative filtering
 -   [ ] Implement hybrid (optional)
 -   [ ] Model evaluation
 
-### Phase 5: Web Interface (Tuần 6)
+### Phase 5: Web Interface
 
 -   [ ] Design UI/UX
 -   [ ] Implement web app
 -   [ ] Integration với models
 -   [ ] Testing
 
-### Phase 6: Documentation & Finalization (Tuần 7)
+### Phase 6: Documentation & Finalization
 
 -   [ ] Viết báo cáo
 -   [ ] Tạo video demo (optional)
