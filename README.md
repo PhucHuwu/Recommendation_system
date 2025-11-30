@@ -3,11 +3,17 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Streamlit_Cloud-FF4B4B.svg)](https://movie-recommender-phuc-huwu.streamlit.app/)
 
 A comprehensive recommendation system built using Content-Based Filtering and Collaborative Filtering techniques on the MovieLens dataset.
 
+## Live Demo
+
+**Try the app live**: [https://movie-recommender-phuc-huwu.streamlit.app/](https://movie-recommender-phuc-huwu.streamlit.app/)
+
 ## Table of Contents
 
+-   [Live Demo](#-live-demo)
 -   [Overview](#overview)
 -   [Features](#features)
 -   [Project Structure](#project-structure)
@@ -166,6 +172,13 @@ jupyter notebook notebooks/05_model_evaluation.ipynb
 ```
 
 ### Running the Web Application
+
+#### Option 1: Use the Live Demo (Recommended)
+
+Visit the deployed application on Streamlit Cloud:
+**[https://movie-recommender-phuc-huwu.streamlit.app/](https://movie-recommender-phuc-huwu.streamlit.app/)**
+
+#### Option 2: Run Locally
 
 Launch the Streamlit web interface:
 
