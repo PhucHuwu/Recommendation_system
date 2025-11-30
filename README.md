@@ -120,7 +120,7 @@ Recommendation_system/
 1. **Clone the repository**
 
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/PhucHuwu/Recommendation_system.git
     cd Recommendation_system
     ```
 
@@ -373,15 +373,9 @@ def get_recommendations(self, movie_id: int, n: int = 10) -> pd.DataFrame:
 
 This project was developed as part of a final project for a Recommendation Systems course.
 
-### Development Team
+### Author
 
-[Add team member information here]
-
-### Course Information
-
--   **Course**: Recommendation Systems
--   **Institution**: [Institution Name]
--   **Year**: 2025
+PhucHuwu
 
 ## References
 
@@ -392,4 +386,3 @@ This project was developed as part of a final project for a Recommendation Syste
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
