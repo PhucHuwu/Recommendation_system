@@ -173,8 +173,3 @@ tmp/
 !README.md
 !implementation_plan.md
 *.md
-
-!evaluation_summary.txt
-!model_comparison.png
-!model_evaluation_results.csv
-!model_radar_chart.png

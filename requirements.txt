@@ -28,11 +28,3 @@ beautifulsoup4>=4.12.0
 # Utils
 python-dotenv>=1.0.0
 tqdm>=4.66.0
-
-# Optional: Advanced Features
-# tensorflow>=2.13.0
-# torch>=2.0.0
-# transformers>=4.30.0
-# sentence-transformers>=2.2.0
-# pymongo>=4.5.0
-# sqlalchemy>=2.0.0
