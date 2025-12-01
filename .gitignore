@@ -1,134 +1,8 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-*/.ipynb_checkpoints/*
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-.python-version
-
-# pipenv
-Pipfile.lock
-
-# PEP 582
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
 
 # IDEs
 .vscode/
-.idea/
-*.swp
-*.swo
-*~
 
 # OS
 .DS_Store
@@ -137,15 +11,11 @@ desktop.ini
 
 # Data files - raw data ignored, processed data kept for deployment
 data/raw/*
-!data/raw/.gitkeep
 
 # Model files (trained models can be large - build on-the-fly instead)
 data/models/*
 !data/models/models_metadata.json
 *.pkl
-*.h5
-*.model
-*.joblib
 
 # Videos
 videos/*
@@ -153,21 +23,13 @@ videos/*
 
 # Reports
 reports/*
-!reports/.gitkeep
-!reports/*.md
-
-# Logs
-*.log
-logs/
-
-# Temporary files
-*.tmp
-*.bak
-*.swp
-temp/
-tmp/
+!Báo cáo nghiên cứu khoa học.pdf
+!reports/evaluation_report.txt
+!reports/model_comparison.png
+!reports/model_evaluation.csv
+!reports/model_radar_chart.png
 
 # Keep important markdown files
 !README.md
-!implementation_plan.md
 *.md
+*.docx
