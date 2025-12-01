@@ -133,7 +133,7 @@ Recommendation_system/
 ├── LICENSE                                # MIT License
 ├── README.md                              # Project documentation
 ├── requirements.txt                       # Project dependencies
-├── streamlit_app.py                       # Main Streamlit web application
+└── streamlit_app.py                       # Main Streamlit web application
 ```
 
 ## Installation
