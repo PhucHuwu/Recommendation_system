@@ -83,33 +83,57 @@ This project implements an end-to-end movie recommendation system that combines 
 
 ```
 Recommendation_system/
+├── .devcontainer/
+│   └── devcontainer.json                  # Development container configuration
+│
+├── .streamlit/
+│   └── config.toml                        # Streamlit configuration
+│
 ├── data/
-│   ├── raw/                               # Original MovieLens dataset
+│   ├── models/                            # Trained model files
 │   ├── processed/                         # Processed data and features
-│   └── models/                            # Trained model files (~2.3GB)
+│   │   ├── movies_enriched.csv
+│   │   ├── movies_with_genres.csv
+│   │   └── ratings.csv
+│   │
+│   └── raw/                               # Original MovieLens dataset
+│
 ├── notebooks/
 │   ├── 01_data_collection.ipynb           # Data acquisition and initial exploration
 │   ├── 02_data_cleaning.ipynb             # Data cleaning and preprocessing
 │   ├── 03_eda_visualization.ipynb         # Exploratory data analysis
 │   ├── 04_model_building.ipynb            # Model training and comparison
 │   └── 05_model_evaluation.ipynb          # Performance evaluation
+│
+├── reports/                               # Evaluation results and visualizations
+│
 ├── src/
 │   ├── data_processing/
-│   │   ├── collector.py                   # Data collection utilities
+│   │   ├── __init__.py
 │   │   ├── cleaner.py                     # Data cleaning methods
+│   │   ├── collector.py                   # Data collection utilities
 │   │   └── preprocessor.py                # Feature engineering
-│   ├── models/
-│   │   ├── content_based.py               # Content-based recommender
-│   │   └── collaborative_filtering.py     # Collaborative filtering
-│   └── evaluation/
-│       └── metrics.py                     # Evaluation metrics
+│   │
+│   ├── evaluation/
+│   │   ├── __init__.py
+│   │   └── metrics.py                     # Evaluation metrics
+│   │
+│   └── models/
+│       ├── __init__.py
+│       ├── collaborative_filtering.py     # Collaborative filtering
+│       └── content_based.py               # Content-based recommender
+│
+├── videos/                                # Video storage
 ├── web_app/
-│   ├── app.py                             # Streamlit web application
-│   ├── requirements.txt                   # Web app dependencies
-│   └── README.md                          # Web app documentation
-├── reports/                               # Evaluation results and visualizations
-├── tests/                                 # Unit tests
-└── requirements.txt                       # Project dependencies
+│   └── app.py                             # Alternative Streamlit app entry
+│
+├── .gitattributes                         # Git attributes configuration
+├── .gitignore                             # Git ignore rules
+├── implementation_plan.md                 # Implementation plan
+├── LICENSE                                # MIT License
+├── README.md                              # Project documentation
+├── requirements.txt                       # Project dependencies
+├── streamlit_app.py                       # Main Streamlit web application
 ```
 
 ## Installation
