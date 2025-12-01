@@ -29,7 +29,7 @@ A comprehensive movie recommendation system built with Content-Based Filtering a
 
 ## Overview
 
-This project implements a complete end-to-end movie recommendation system that combines multiple recommendation approaches to provide diverse and accurate movie suggestions. Whether you're a movie enthusiast looking for your next watch or a data scientist interested in recommendation algorithms, this system has you covered! 
+This project implements a complete end-to-end movie recommendation system that combines multiple recommendation approaches to provide diverse and accurate movie suggestions. Whether you're a movie enthusiast looking for your next watch or a data scientist interested in recommendation algorithms, this system has you covered!
 
 The project includes everything from data collection and preprocessing to model training, evaluation, and a beautiful web interface for exploring recommendations.
 
@@ -169,7 +169,7 @@ Recommendation_system/
     ```bash
     pip install -r requirements.txt
     ```
-    
+
     See [`requirements.txt`](requirements.txt) for the complete list of dependencies.
 
 4. **Download dataset** (if not already present)
@@ -380,6 +380,7 @@ All models were evaluated using ranking metrics at K=10:
 
 ### Project Reports
 
+-   [`reports/Báo_cáo_khoa_học_dữ_liệu.pdf`](reports/Báo_cáo_khoa_học_dữ_liệu.pdf) - Comprehensive project report in Vietnamese
 -   [`reports/evaluation_summary.txt`](reports/evaluation_summary.txt) - Model evaluation summary
 -   [`reports/model_evaluation_results.csv`](reports/model_evaluation_results.csv) - Detailed performance metrics
 -   [`reports/model_comparison.png`](reports/model_comparison.png) - Visual model performance comparison
@@ -394,27 +395,9 @@ Each notebook includes:
 -   Visualization outputs
 -   Summary insights and conclusions
 
-### API Documentation
-
-All modules include comprehensive docstrings following Google style:
-
-```python
-def get_recommendations(self, movie_id: int, n: int = 10) -> pd.DataFrame:
-    """
-    Get top N recommendations for a movie.
-
-    Args:
-        movie_id: MovieLens movie ID
-        n: Number of recommendations to return
-
-    Returns:
-        DataFrame with recommended movies and similarity scores
-    """
-```
-
 ## Author
 
-**PhucHuwu** - *Initial work and development*
+**PhucHuwu** - _Initial work and development_
 
 ## References
 

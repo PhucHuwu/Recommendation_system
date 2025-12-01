@@ -23,7 +23,7 @@ videos/*
 
 # Reports
 reports/*
-!Báo cáo nghiên cứu khoa học.pdf
+!reports/Báo_cáo_khoa_học_dữ_liệu.pdf
 !reports/evaluation_report.txt
 !reports/model_comparison.png
 !reports/model_evaluation.csv
