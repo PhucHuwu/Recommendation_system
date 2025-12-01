@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Streamlit_Cloud-FF4B4B.svg)](https://movie-recommender-phuc-huwu.streamlit.app/)
 
-A comprehensive recommendation system built using Content-Based Filtering and Collaborative Filtering techniques on the MovieLens dataset.
+A comprehensive movie recommendation system built with Content-Based Filtering and Collaborative Filtering techniques, trained on the popular MovieLens dataset. Discover your next favorite movie with intelligent recommendations!
 
 ## Live Demo
 
@@ -17,17 +17,21 @@ A comprehensive recommendation system built using Content-Based Filtering and Co
 -   [Overview](#overview)
 -   [Features](#features)
 -   [Project Structure](#project-structure)
--   [Installation](#installation)
+-   [Installation](#-installation)
 -   [Usage](#usage)
 -   [Models & Evaluation](#models--evaluation)
 -   [Tech Stack](#tech-stack)
 -   [Results](#results)
 -   [Documentation](#documentation)
+-   [Author](#author)
+-   [References](#references)
 -   [License](#license)
 
 ## Overview
 
-This project implements an end-to-end movie recommendation system that combines multiple recommendation approaches to provide diverse and accurate movie suggestions. The system includes data collection, preprocessing, exploratory data analysis, model training, evaluation, and a web-based user interface.
+This project implements a complete end-to-end movie recommendation system that combines multiple recommendation approaches to provide diverse and accurate movie suggestions. Whether you're a movie enthusiast looking for your next watch or a data scientist interested in recommendation algorithms, this system has you covered! 
+
+The project includes everything from data collection and preprocessing to model training, evaluation, and a beautiful web interface for exploring recommendations.
 
 ### Key Highlights
 
@@ -81,7 +85,7 @@ This project implements an end-to-end movie recommendation system that combines 
 
 ## Project Structure
 
-```
+```text
 Recommendation_system/
 ├── .devcontainer/
 │   └── devcontainer.json                  # Development container configuration
@@ -129,7 +133,6 @@ Recommendation_system/
 │
 ├── .gitattributes                         # Git attributes configuration
 ├── .gitignore                             # Git ignore rules
-├── implementation_plan.md                 # Implementation plan
 ├── LICENSE                                # MIT License
 ├── README.md                              # Project documentation
 ├── requirements.txt                       # Project dependencies
@@ -166,6 +169,8 @@ Recommendation_system/
     ```bash
     pip install -r requirements.txt
     ```
+    
+    See [`requirements.txt`](requirements.txt) for the complete list of dependencies.
 
 4. **Download dataset** (if not already present)
     ```bash
@@ -176,7 +181,7 @@ Recommendation_system/
 
 ### Running Notebooks
 
-Execute the notebooks in sequence to reproduce the entire pipeline:
+Execute the [notebooks](notebooks/) in sequence to reproduce the entire pipeline:
 
 ```bash
 # 1. Data Collection
@@ -199,15 +204,17 @@ jupyter notebook notebooks/05_model_evaluation.ipynb
 
 #### Option 1: Use the Live Demo (Recommended)
 
-Visit the deployed application on Streamlit Cloud:
+**Quick Start**: Visit the deployed application on Streamlit Cloud:
 **[https://movie-recommender-phuc-huwu.streamlit.app/](https://movie-recommender-phuc-huwu.streamlit.app/)**
+
+No installation required - just click and start exploring movie recommendations!
 
 #### Option 2: Run Locally
 
 Launch the Streamlit web interface:
 
 ```bash
-streamlit run web_app/app.py
+streamlit run streamlit_app.py
 ```
 
 The application will open in your browser at `http://localhost:8501`
@@ -373,11 +380,10 @@ All models were evaluated using ranking metrics at K=10:
 
 ### Project Reports
 
--   `reports/requirements_compliance.md` - Requirements checklist and compliance
--   `reports/phase4_model_summary.md` - Detailed model specifications
--   `reports/progress_report.md` - Development progress tracking
--   `reports/evaluation_summary.txt` - Model evaluation summary
--   `reports/model_evaluation_results.csv` - Detailed performance metrics
+-   [`reports/evaluation_summary.txt`](reports/evaluation_summary.txt) - Model evaluation summary
+-   [`reports/model_evaluation_results.csv`](reports/model_evaluation_results.csv) - Detailed performance metrics
+-   [`reports/model_comparison.png`](reports/model_comparison.png) - Visual model performance comparison
+-   [`reports/model_radar_chart.png`](reports/model_radar_chart.png) - Radar chart showing overall performance
 
 ### Notebooks Documentation
 
@@ -406,9 +412,9 @@ def get_recommendations(self, movie_id: int, n: int = 10) -> pd.DataFrame:
     """
 ```
 
-### Author
+## Author
 
-PhucHuwu
+**PhucHuwu** - *Initial work and development*
 
 ## References
 
@@ -418,4 +424,4 @@ PhucHuwu
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
