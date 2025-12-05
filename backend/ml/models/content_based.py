@@ -104,17 +104,20 @@ class ContentBasedCF:
         # Combine features
         if len(features) == 1:
             self.content_matrix = features[0]
+            # Convert to csr_matrix if sparse
+            if hasattr(self.content_matrix, 'tocsr'):
+                self.content_matrix = self.content_matrix.tocsr()
         else:
             # Combine TF-IDF and genres (with genre weight)
-            from scipy.sparse import hstack
+            from scipy.sparse import hstack, csr_matrix
             genre_weight = 0.3  # Weight for genres vs synopsis
             
             if self.use_synopsis and self.use_genres:
                 # Weight genres more
                 weighted_genres = features[1] * genre_weight
-                self.content_matrix = hstack([features[0], weighted_genres])
+                self.content_matrix = hstack([features[0], weighted_genres]).tocsr()
             else:
-                self.content_matrix = hstack(features)
+                self.content_matrix = hstack(features).tocsr()
         
         print(f"  Content matrix shape: {self.content_matrix.shape}")
         print("  Training complete!")
@@ -211,7 +214,12 @@ class ContentBasedCF:
         model = cls(use_synopsis=data['use_synopsis'], use_genres=data['use_genres'])
         model.tfidf_vectorizer = data['tfidf_vectorizer']
         model.mlb = data['mlb']
-        model.content_matrix = data['content_matrix']
+        # Ensure content_matrix is in csr format for indexing
+        content_matrix = data['content_matrix']
+        if hasattr(content_matrix, 'tocsr'):
+            model.content_matrix = content_matrix.tocsr()
+        else:
+            model.content_matrix = content_matrix
         model.anime_id_map = data['anime_id_map']
         model.reverse_anime_map = data['reverse_anime_map']
         model.anime_features = data['anime_features']

@@ -68,8 +68,10 @@ export default function AnimeDetailPage() {
                 // Fetch user's rating if authenticated
                 if (isAuthenticated && token) {
                     try {
-                        // TODO: Implement getUserRating endpoint in backend
-                        // For now, we'll skip this
+                        const ratingResponse = await api.getMyRatingForAnime(token, animeId);
+                        if (ratingResponse.rating) {
+                            setUserRating(ratingResponse.rating.rating);
+                        }
                     } catch (err) {
                         console.error("Failed to fetch user rating:", err);
                     }
@@ -272,9 +274,13 @@ export default function AnimeDetailPage() {
                             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                                 <RatingStars value={userRating} onChange={handleRating} size="lg" showValue />
                                 {ratingLoading && <span className="text-sm text-muted-foreground">Đang lưu...</span>}
-                                {userRating > 0 && !ratingLoading && <span className="text-sm text-success">Đã lưu đánh giá của bạn</span>}
+                                {userRating > 0 && !ratingLoading && <span className="text-sm text-success">Bạn đã đánh giá {userRating}/10 ⭐</span>}
                             </div>
-                            {!userRating && <p className="text-sm text-muted-foreground mt-2">Click vào các ngôi sao để đánh giá anime này (1-10)</p>}
+                            {userRating > 0 ? (
+                                <p className="text-sm text-muted-foreground mt-2">Click vào các ngôi sao để cập nhật đánh giá</p>
+                            ) : (
+                                <p className="text-sm text-muted-foreground mt-2">Click vào các ngôi sao để đánh giá anime này (1-10)</p>
+                            )}
                         </CardContent>
                     </Card>
                 </section>

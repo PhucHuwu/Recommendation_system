@@ -61,6 +61,32 @@ def add_rating():
     }), 201
 
 
+@rating_bp.route('/<int:anime_id>', methods=['GET'])
+@jwt_required()
+def get_my_rating_for_anime(anime_id):
+    """Get current user's rating for a specific anime"""
+    user_id = int(get_jwt_identity())
+    db = get_db()
+    
+    rating = db.ratings.find_one(
+        {'user_id': user_id, 'anime_id': anime_id},
+        {'_id': 0, 'user_id': 1, 'anime_id': 1, 'rating': 1, 'created_at': 1, 'updated_at': 1}
+    )
+    
+    if not rating:
+        return jsonify({'rating': None}), 200
+    
+    return jsonify({
+        'rating': {
+            'user_id': rating['user_id'],
+            'anime_id': rating['anime_id'],
+            'rating': rating['rating'],
+            'created_at': rating.get('created_at'),
+            'updated_at': rating.get('updated_at')
+        }
+    }), 200
+
+
 @rating_bp.route('/<int:anime_id>', methods=['PUT'])
 @jwt_required()
 def update_rating(anime_id):
