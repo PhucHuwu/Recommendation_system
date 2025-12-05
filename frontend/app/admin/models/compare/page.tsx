@@ -29,6 +29,21 @@ const COLORS = {
     content_based: "#f59e0b",
 };
 
+const customTooltipStyle = {
+    backgroundColor: "rgba(17, 24, 39, 0.95)",
+    border: "1px solid rgba(99, 102, 241, 0.3)",
+    borderRadius: "8px",
+    padding: "12px",
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)",
+    backdropFilter: "blur(8px)",
+};
+
+const customTooltipContent = {
+    color: "#e5e7eb",
+    fontSize: "13px",
+    fontWeight: 500,
+};
+
 export default function ModelsComparePage() {
     const [models, setModels] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -216,8 +231,8 @@ export default function ModelsComparePage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <RadarChart data={radarData}>
                                     <PolarGrid stroke="hsl(var(--border))" />
-                                    <PolarAngleAxis dataKey="metric" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
-                                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "hsl(var(--muted-foreground))" }} />
+                                    <PolarAngleAxis dataKey="metric" tick={{ fill: "#e5e7eb", fontSize: 12 }} />
+                                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "#e5e7eb" }} />
                                     {models.map((model, index) => (
                                         <Radar
                                             key={model.name}
@@ -229,13 +244,7 @@ export default function ModelsComparePage() {
                                         />
                                     ))}
                                     <Legend />
-                                    <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: "hsl(var(--card))",
-                                            border: "1px solid hsl(var(--border))",
-                                            borderRadius: "8px",
-                                        }}
-                                    />
+                                    <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
                                 </RadarChart>
                             </ResponsiveContainer>
                         </div>
@@ -252,15 +261,9 @@ export default function ModelsComparePage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={metricsData}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} />
-                                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                                    <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: "hsl(var(--card))",
-                                            border: "1px solid hsl(var(--border))",
-                                            borderRadius: "8px",
-                                        }}
-                                    />
+                                    <XAxis dataKey="name" stroke="#9ca3af" tick={{ fill: "#e5e7eb", fontSize: 12 }} />
+                                    <YAxis stroke="#9ca3af" tick={{ fill: "#e5e7eb" }} />
+                                    <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
                                     <Legend />
                                     <Bar dataKey="RMSE" fill="#6366f1" />
                                     <Bar dataKey="MAE" fill="#8b5cf6" />
@@ -280,15 +283,9 @@ export default function ModelsComparePage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={metricsData}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} />
-                                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                                    <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: "hsl(var(--card))",
-                                            border: "1px solid hsl(var(--border))",
-                                            borderRadius: "8px",
-                                        }}
-                                    />
+                                    <XAxis dataKey="name" stroke="#9ca3af" tick={{ fill: "#e5e7eb", fontSize: 12 }} />
+                                    <YAxis stroke="#9ca3af" tick={{ fill: "#e5e7eb" }} />
+                                    <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
                                     <Legend />
                                     <Bar dataKey="Precision@K" fill="#10b981" />
                                     <Bar dataKey="Recall@K" fill="#06b6d4" />
