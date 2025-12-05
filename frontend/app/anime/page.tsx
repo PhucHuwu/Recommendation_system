@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useAuth } from "@/context/auth-context";
 import { AnimeList } from "@/components/anime/anime-list";
+import { RecommendationList } from "@/components/recommendation/recommendation-list";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Filter, X, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { api } from "@/lib/api";
 import type { Anime } from "@/types/anime";
@@ -17,10 +19,13 @@ const ITEMS_PER_PAGE = 20;
 export default function AnimePage() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { isAuthenticated, token } = useAuth();
 
     const [animes, setAnimes] = useState<Anime[]>([]);
+    const [recommendations, setRecommendations] = useState<any[]>([]);
     const [genres, setGenres] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
+    const [recLoading, setRecLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
     const [selectedGenre, setSelectedGenre] = useState(searchParams.get("genre") || "");
     const [sortBy, setSortBy] = useState(searchParams.get("sort") || "score");
@@ -42,6 +47,24 @@ export default function AnimePage() {
         };
         fetchGenres();
     }, []);
+
+    // Fetch recommendations for authenticated users
+    useEffect(() => {
+        if (isAuthenticated && token) {
+            const fetchRecommendations = async () => {
+                setRecLoading(true);
+                try {
+                    const response = await api.getRecommendations(token, 10);
+                    setRecommendations(response.recommendations || []);
+                } catch (error) {
+                    console.error("Failed to fetch recommendations:", error);
+                } finally {
+                    setRecLoading(false);
+                }
+            };
+            fetchRecommendations();
+        }
+    }, [isAuthenticated, token]);
 
     // Fetch animes
     useEffect(() => {
@@ -106,6 +129,17 @@ export default function AnimePage() {
                 <h1 className="text-3xl font-bold mb-2">Danh sách Anime</h1>
                 <p className="text-muted-foreground">Khám phá {total.toLocaleString()} anime từ database</p>
             </div>
+
+            {/* Recommendations Section - Only for authenticated users */}
+            {isAuthenticated && (
+                <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        <h2 className="text-xl font-semibold">Gợi ý cho bạn</h2>
+                    </div>
+                    <RecommendationList title="" items={recommendations} loading={recLoading} showScrollButtons={true} />
+                </div>
+            )}
 
             {/* Filters */}
             <div className="flex flex-col gap-4 mb-8">

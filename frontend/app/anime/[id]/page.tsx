@@ -59,7 +59,7 @@ export default function AnimeDetailPage() {
 
                 // Fetch similar animes (using content-based)
                 try {
-                    const similarResponse = await api.getSimilarAnimes(animeId, 6, true);
+                    const similarResponse = await api.getSimilarAnimes(animeId, 12, true);
                     setSimilarAnimes(similarResponse.similar_animes || []);
                 } catch (err) {
                     console.error("Failed to fetch similar animes:", err);
