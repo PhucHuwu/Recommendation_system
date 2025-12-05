@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,9 +65,14 @@ export default function ModelsPage() {
     return (
         <div className="space-y-6">
             {/* Page Header */}
-            <div>
-                <h1 className="text-3xl font-bold">Quản lý Models</h1>
-                <p className="text-muted-foreground">Quản lý và so sánh các model recommendation</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold">Quản lý Models</h1>
+                    <p className="text-muted-foreground">Quản lý và so sánh các model recommendation</p>
+                </div>
+                <Button asChild>
+                    <Link href="/admin/models/compare">So sánh Models</Link>
+                </Button>
             </div>
 
             {/* Success Message */}

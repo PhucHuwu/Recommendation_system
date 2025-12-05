@@ -45,19 +45,19 @@ def get_stats():
 
 @admin_bp.route('/visualization', methods=['GET'])
 def get_visualization_data():
-    """Get data for visualization charts"""
+    """Get comprehensive data for 14+ visualization charts"""
     db = get_db()
     
     data = {}
     
-    # Rating distribution (1-10)
+    # 1. Rating distribution (Histogram)
     pipeline = [
         {'$group': {'_id': '$rating', 'count': {'$sum': 1}}},
         {'$sort': {'_id': 1}}
     ]
     data['rating_distribution'] = list(db.ratings.aggregate(pipeline))
     
-    # Top 10 most rated animes
+    # 2. Top 10 most rated animes (Bar Chart)
     pipeline = [
         {'$group': {'_id': '$anime_id', 'rating_count': {'$sum': 1}, 'avg_rating': {'$avg': '$rating'}}},
         {'$sort': {'rating_count': -1}},
@@ -78,7 +78,7 @@ def get_visualization_data():
     ]
     data['top_rated_animes'] = list(db.ratings.aggregate(pipeline))
     
-    # Genre frequency
+    # 3. Genre frequency (Horizontal Bar)
     pipeline = [
         {'$project': {'genres': {'$split': ['$genres', ', ']}}},
         {'$unwind': '$genres'},
@@ -89,7 +89,34 @@ def get_visualization_data():
     ]
     data['genre_frequency'] = list(db.animes.aggregate(pipeline))
     
-    # Score distribution (anime scores)
+    # 4. Anime type distribution (Pie Chart) - DISABLED: no 'type' field in DB
+    # Use genre distribution as alternative
+    pipeline = [
+        {'$project': {'first_genre': {'$arrayElemAt': [{'$split': ['$genres', ', ']}, 0]}}},
+        {'$group': {'_id': '$first_genre', 'count': {'$sum': 1}}},
+        {'$match': {'_id': {'$ne': '', '$ne': None}}},
+        {'$sort': {'count': -1}},
+        {'$limit': 8}
+    ]
+    data['anime_type_distribution'] = list(db.animes.aggregate(pipeline))
+    
+    # 5. Rating categories (Donut Chart)
+    pipeline = [
+        {'$bucket': {
+            'groupBy': '$rating',
+            'boundaries': [1, 5, 8, 11],
+            'default': 'Other',
+            'output': {'count': {'$sum': 1}}
+        }}
+    ]
+    rating_buckets = list(db.ratings.aggregate(pipeline))
+    data['rating_categories'] = [
+        {'category': 'Poor (1-4)', 'count': rating_buckets[0]['count'] if len(rating_buckets) > 0 else 0},
+        {'category': 'Average (5-7)', 'count': rating_buckets[1]['count'] if len(rating_buckets) > 1 else 0},
+        {'category': 'Good (8-10)', 'count': rating_buckets[2]['count'] if len(rating_buckets) > 2 else 0}
+    ]
+    
+    # 6. Score distribution (Area Chart)
     pipeline = [
         {'$bucket': {
             'groupBy': '$score',
@@ -99,6 +126,78 @@ def get_visualization_data():
         }}
     ]
     data['score_distribution'] = list(db.animes.aggregate(pipeline))
+    
+    # 7. Score vs Rating Count scatter (episodes field doesn't exist in DB)
+    pipeline = [
+        {'$match': {'score': {'$exists': True, '$ne': None}}},
+        {'$lookup': {
+            'from': 'ratings',
+            'localField': 'mal_id',
+            'foreignField': 'anime_id',
+            'as': 'ratings'
+        }},
+        {'$project': {
+            '_id': 0,  # Exclude ObjectId
+            'score': {'$toDouble': '$score'},
+            'rating_count': {'$size': '$ratings'},
+            'avg_user_rating': {'$avg': '$ratings.rating'}
+        }},
+        {'$match': {'rating_count': {'$gt': 10}}},  # At least 10 ratings
+        {'$sample': {'size': 200}}
+    ]
+    data['episode_rating_scatter'] = list(db.animes.aggregate(pipeline))
+    
+    # 8. Genre co-occurrence (for heatmap)
+    # Get top 10 genres first
+    top_genres_data = data['genre_frequency'][:10]
+    top_genres = [g['_id'] for g in top_genres_data]
+    
+    cooccurrence = {}
+    for genre1 in top_genres:
+        cooccurrence[genre1] = {}
+        for genre2 in top_genres:
+            if genre1 == genre2:
+                cooccurrence[genre1][genre2] = 0
+            else:
+                # Count animes with both genres
+                count = db.animes.count_documents({
+                    'genres': {'$regex': f'.*{genre1}.*{genre2}.*|.*{genre2}.*{genre1}.*'}
+                })
+                cooccurrence[genre1][genre2] = count
+    
+    data['genre_cooccurrence'] = cooccurrence
+    
+    # 9. User engagement funnel
+    total_users = db.users.count_documents({})
+    users_with_ratings = db.ratings.distinct('user_id')
+    active_users = db.watch_history.distinct('user_id')
+    
+    data['user_engagement_funnel'] = [
+        {'stage': 'Registered Users', 'count': total_users},
+        {'stage': 'Users with Ratings', 'count': len(users_with_ratings)},
+        {'stage': 'Active Users', 'count': len(active_users)}
+    ]
+    
+    # 10. Top animes for radar chart
+    pipeline = [
+        {'$sort': {'score': -1}},
+        {'$limit': 5},
+        {'$lookup': {
+            'from': 'ratings',
+            'localField': 'mal_id',
+            'foreignField': 'anime_id',
+            'as': 'ratings'
+        }},
+        {'$project': {
+            '_id': 0,  # Exclude ObjectId
+            'name': 1,
+            'score': {'$multiply': ['$score', 10]},  # Normalize to 100
+            'popularity': {'$min': [100, {'$multiply': [{'$divide': ['$members', 100000]}, 10]}]},
+            'favorites': {'$min': [100, {'$multiply': [{'$divide': ['$favorites', 10000]}, 10]}]},
+            'rating_count': {'$min': [100, {'$multiply': [{'$divide': [{'$size': '$ratings'}, 1000]}, 10]}]}
+        }}
+    ]
+    data['top_anime_radar'] = list(db.animes.aggregate(pipeline))
     
     return jsonify({'data': data}), 200
 
