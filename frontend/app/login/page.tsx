@@ -106,10 +106,6 @@ export default function LoginPage() {
                         </div>
                     </CardContent>
                 </Card>
-
-                <p className="text-center text-sm text-muted-foreground mt-6">
-                    Chưa có tài khoản? <span className="text-primary">Nhập User ID mới để bắt đầu</span>
-                </p>
             </div>
         </div>
     );
