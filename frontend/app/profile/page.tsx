@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -305,31 +304,19 @@ export default function ProfilePage() {
                                 </Button>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {ratings.map((rating) => (
                                     <Link key={rating.anime_id} href={`/anime/${rating.anime_id}`} className="group">
-                                        <Card className="bg-secondary/50 hover:bg-secondary transition-colors overflow-hidden">
-                                            <div className="relative aspect-[3/4]">
-                                                <Image
-                                                    src={
-                                                        rating.anime?.image_url ||
-                                                        `/placeholder.svg?height=200&width=150&query=${encodeURIComponent(rating.anime?.name || "anime")}`
-                                                    }
-                                                    alt={rating.anime?.name || "Anime"}
-                                                    fill
-                                                    className="object-cover group-hover:scale-105 transition-transform"
-                                                />
-                                                {/* Rating Badge */}
-                                                <div className="absolute top-2 right-2">
-                                                    <Badge className="bg-warning text-warning-foreground font-bold">{rating.rating}/10</Badge>
+                                        <Card className="bg-secondary/50 hover:bg-secondary transition-colors">
+                                            <CardContent className="p-4">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <h4 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors flex-1">
+                                                        {rating.anime?.name}
+                                                    </h4>
+                                                    <Badge className="bg-warning text-warning-foreground font-bold flex-shrink-0">{rating.rating}/10</Badge>
                                                 </div>
-                                            </div>
-                                            <CardContent className="p-3">
-                                                <h4 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                                                    {rating.anime?.name}
-                                                </h4>
                                                 <div className="flex flex-wrap gap-1 mt-2">
-                                                    {rating.anime?.genre?.slice(0, 2).map((genre) => (
+                                                    {rating.anime?.genre?.slice(0, 3).map((genre) => (
                                                         <Badge key={genre} variant="outline" className="text-xs">
                                                             {genre}
                                                         </Badge>

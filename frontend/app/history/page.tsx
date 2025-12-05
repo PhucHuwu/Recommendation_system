@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,18 +31,6 @@ function HistoryItem({ item, onRemove }: { item: UserHistory; onRemove?: () => v
         <Card className="bg-card hover:bg-card/80 transition-colors">
             <CardContent className="p-4">
                 <div className="flex gap-4">
-                    {/* Thumbnail */}
-                    <Link href={`/anime/${item.anime_id}`} className="flex-shrink-0">
-                        <div className="relative w-20 h-28 rounded-lg overflow-hidden">
-                            <Image
-                                src={item.anime?.image_url || `/placeholder.svg?height=112&width=80&query=${encodeURIComponent(item.anime?.name || "anime")}`}
-                                alt={item.anime?.name || "Anime"}
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
-                    </Link>
-
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                         <Link href={`/anime/${item.anime_id}`}>
@@ -97,15 +84,12 @@ function HistoryList({ history, loading, onRemove }: { history: UserHistory[]; l
                 {Array.from({ length: 5 }, (_, i) => (
                     <Card key={i} className="animate-pulse">
                         <CardContent className="p-4">
-                            <div className="flex gap-4">
-                                <div className="w-20 h-28 bg-muted rounded-lg" />
-                                <div className="flex-1 space-y-2">
-                                    <div className="h-5 bg-muted rounded w-3/4" />
-                                    <div className="h-4 bg-muted rounded w-1/4" />
-                                    <div className="flex gap-1">
-                                        <div className="h-5 bg-muted rounded-full w-16" />
-                                        <div className="h-5 bg-muted rounded-full w-12" />
-                                    </div>
+                            <div className="space-y-2">
+                                <div className="h-5 bg-muted rounded w-3/4" />
+                                <div className="h-4 bg-muted rounded w-1/4" />
+                                <div className="flex gap-1">
+                                    <div className="h-5 bg-muted rounded-full w-16" />
+                                    <div className="h-5 bg-muted rounded-full w-12" />
                                 </div>
                             </div>
                         </CardContent>
