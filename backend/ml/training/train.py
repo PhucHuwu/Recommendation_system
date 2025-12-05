@@ -20,7 +20,7 @@ import os
 from dotenv import load_dotenv
 import numpy as np
 import random
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from collections import defaultdict
 
 # Load environment variables
@@ -172,7 +172,7 @@ def optimize_hybrid_weights(user_model: UserBasedCF, item_model: ItemBasedCF,
     return best_alpha
 
 
-def update_model_registry(model_name: str, metrics: Dict[str, float] = None, is_active: bool = False):
+def update_model_registry(model_name: str, metrics: Optional[Dict[str, float]] = None, is_active: bool = False):
     """Update model registry in database"""
     db = get_db_connection()
     registry = db['model_registry']

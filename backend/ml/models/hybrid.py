@@ -201,10 +201,10 @@ class HybridSwitchingCF:
         user_activity = 0
         item_popularity = 0
         
-        if user_idx >= 0:
+        if user_idx >= 0 and self.user_model.user_item_matrix is not None:
             user_activity = self.user_model.user_item_matrix[user_idx].nnz
         
-        if anime_idx >= 0:
+        if anime_idx >= 0 and self.item_model.user_item_matrix is not None:
             item_popularity = self.item_model.user_item_matrix[:, anime_idx].nnz
         
         # Switching logic
@@ -230,7 +230,7 @@ class HybridSwitchingCF:
         user_idx = self.user_model.user_id_map.get(user_id, -1)
         user_activity = 0
         
-        if user_idx >= 0:
+        if user_idx >= 0 and self.user_model.user_item_matrix is not None:
             user_activity = self.user_model.user_item_matrix[user_idx].nnz
         
         if user_activity >= self.user_threshold:

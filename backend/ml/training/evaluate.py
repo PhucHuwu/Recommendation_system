@@ -104,8 +104,8 @@ def _compute_prediction_metrics(model, test_data: List[dict], sample_size: int =
     if len(errors) == 0:
         return 0.0, 0.0, 0.0
     
-    rmse = np.sqrt(np.mean(errors))
-    mae = np.mean(abs_errors)
+    rmse = float(np.sqrt(np.mean(errors)))
+    mae = float(np.mean(abs_errors))
     coverage = successful_predictions / len(sampled_test)
     
     print(f"  RMSE: {rmse:.4f}")
@@ -184,8 +184,8 @@ def _compute_ranking_metrics(model, train_data: List[dict], test_data: List[dict
     if len(precisions) == 0:
         return 0.0, 0.0, 0
     
-    avg_precision = np.mean(precisions)
-    avg_recall = np.mean(recalls)
+    avg_precision = float(np.mean(precisions))
+    avg_recall = float(np.mean(recalls))
     
     print(f"  Precision@{k}: {avg_precision:.4f}")
     print(f"  Recall@{k}: {avg_recall:.4f}")
@@ -272,7 +272,7 @@ def _compute_diversity(model, train_data: List[dict], n_recommendations: int = 1
         except:
             continue
     
-    avg_diversity = np.mean(diversities) if len(diversities) > 0 else 0
+    avg_diversity = float(np.mean(diversities)) if len(diversities) > 0 else 0.0
     
     print(f"  Diversity: {avg_diversity:.4f}")
     
@@ -320,7 +320,7 @@ def _compute_novelty(model, train_data: List[dict], n_recommendations: int = 10,
         except:
             continue
     
-    avg_novelty = np.mean(novelties) if len(novelties) > 0 else 0
+    avg_novelty = float(np.mean(novelties)) if len(novelties) > 0 else 0.0
     
     print(f"  Novelty: {avg_novelty:.4f}")
     
@@ -364,7 +364,7 @@ def compare_models(results: Dict[str, Dict[str, float]]):
     print(f"\n{'='*80}\n")
     
     # Find best model for each metric
-    print("🏆 BEST PERFORMERS:")
+    print("BEST PERFORMERS:")
     print("-" * 40)
     
     important_metrics = ['rmse', 'mae', 'precision_at_k', 'recall_at_k', 'coverage']
