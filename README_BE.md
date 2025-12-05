@@ -71,34 +71,34 @@ flowchart TB
 
 ```
 backend/
-├── run.py                      # Application entry point
+├── run.py                                # Application entry point
 ├── app/
-│   ├── __init__.py            # Flask app factory
-│   ├── config.py              # Configuration classes
+│   ├── __init__.py                       # Flask app factory
+│   ├── config.py                         # Configuration classes
 │   ├── routes/
-│   │   ├── __init__.py        # Blueprint registration
-│   │   ├── admin.py           # Admin endpoints (stats, models)
-│   │   ├── anime.py           # Anime CRUD endpoints
-│   │   ├── auth.py            # Authentication endpoints
-│   │   ├── history.py         # Watch history endpoints
-│   │   ├── rating.py          # Rating endpoints
-│   │   └── recommendation.py  # Recommendation endpoints
+│   │   ├── __init__.py                   # Blueprint registration
+│   │   ├── admin.py                      # Admin endpoints (stats, models)
+│   │   ├── anime.py                      # Anime CRUD endpoints
+│   │   ├── auth.py                       # Authentication endpoints
+│   │   ├── history.py                    # Watch history endpoints
+│   │   ├── rating.py                     # Rating endpoints
+│   │   └── recommendation.py             # Recommendation endpoints
 │   ├── services/
-│   │   └── recommendation_service.py  # ML model service layer
+│   │   └── recommendation_service.py     # ML model service layer
 │   └── utils/
 │       └── __init__.py
 ├── ml/
 │   ├── __init__.py
 │   ├── models/
-│   │   ├── user_based.py      # User-Based CF implementation
-│   │   ├── item_based.py      # Item-Based CF implementation
-│   │   └── hybrid.py          # Hybrid model implementation
+│   │   ├── user_based.py                 # User-Based CF implementation
+│   │   ├── item_based.py                 # Item-Based CF implementation
+│   │   └── hybrid.py                     # Hybrid model implementation
 │   ├── training/
-│   │   ├── train.py           # Training pipeline
-│   │   └── evaluate.py        # Evaluation metrics
-│   └── saved_models/          # Trained model files (.pkl)
+│   │   ├── train.py                      # Training pipeline
+│   │   └── evaluate.py                   # Evaluation metrics
+│   └── saved_models/                     # Trained model files (.pkl)
 └── scripts/
-    └── import_data.py         # Kaggle data import script
+    └── import_data.py                    # Kaggle data import script
 ```
 
 ## Machine Learning Models

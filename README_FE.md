@@ -59,7 +59,7 @@ WibiFlix is a modern web application built with Next.js 16, providing an intuiti
 
 ```
 frontend/
-├── app/                        # Next.js App Router
+├── app/                       # Next.js App Router
 │   ├── layout.tsx             # Root layout with providers
 │   ├── page.tsx               # Homepage
 │   ├── globals.css            # Global styles
@@ -76,7 +76,7 @@ frontend/
 │   ├── login/                 # Authentication
 │   ├── profile/               # User profile
 │   └── search/                # Search page
-├── components/                 # Reusable components
+├── components/                # Reusable components
 │   ├── admin/                 # Admin-specific components
 │   ├── anime/                 # Anime-related components
 │   ├── layout/                # Layout components (header, footer)

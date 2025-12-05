@@ -275,34 +275,34 @@ Frontend will run at: `http://localhost:3000`
 
 ```
 Recommendation_system/
-├── README.md                   # This file
-├── README_BE.md                # Backend documentation
-├── README_FE.md                # Frontend documentation
-├── requirements.txt            # Python dependencies
-├── anime_recommendation_demo.ipynb  # Jupyter notebook demo
+├── README.md                           # This file
+├── README_BE.md                        # Backend documentation
+├── README_FE.md                        # Frontend documentation
+├── requirements.txt                    # Python dependencies
+├── anime_recommendation_demo.ipynb     # Jupyter notebook demo
 │
-├── backend/                    # Flask API Server
-│   ├── run.py                  # Entry point
-│   ├── app/                    # Application package
-│   │   ├── __init__.py         # App factory
-│   │   ├── config.py           # Configuration
-│   │   ├── routes/             # API endpoints
-│   │   ├── services/           # Business logic
-│   │   └── utils/              # Utilities
-│   ├── ml/                     # Machine Learning
-│   │   ├── models/             # CF model implementations
-│   │   ├── training/           # Training pipeline
-│   │   └── saved_models/       # Trained model files
-│   └── scripts/                # Utility scripts
+├── backend/                            # Flask API Server
+│   ├── run.py                          # Entry point
+│   ├── app/                            # Application package
+│   │   ├── __init__.py                 # App factory
+│   │   ├── config.py                   # Configuration
+│   │   ├── routes/                     # API endpoints
+│   │   ├── services/                   # Business logic
+│   │   └── utils/                      # Utilities
+│   ├── ml/                             # Machine Learning
+│   │   ├── models/                     # CF model implementations
+│   │   ├── training/                   # Training pipeline
+│   │   └── saved_models/               # Trained model files
+│   └── scripts/                        # Utility scripts
 │
-└── frontend/                   # Next.js Application
-    ├── app/                    # App Router pages
-    ├── components/             # React components
-    ├── context/                # Context providers
-    ├── hooks/                  # Custom hooks
-    ├── lib/                    # Utilities
-    ├── types/                  # TypeScript types
-    └── public/                 # Static assets
+└── frontend/                           # Next.js Application
+    ├── app/                            # App Router pages
+    ├── components/                     # React components
+    ├── context/                        # Context providers
+    ├── hooks/                          # Custom hooks
+    ├── lib/                            # Utilities
+    ├── types/                          # TypeScript types
+    └── public/                         # Static assets
 ```
 
 ## API Reference
