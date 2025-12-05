@@ -16,10 +16,15 @@ def create_app(config_name=None):
         config_name = os.getenv('FLASK_ENV', 'development')
     
     app = Flask(__name__)
+    app.url_map.strict_slashes = False  # Disable redirect for trailing slashes
     app.config.from_object(config[config_name])
     
-    # Initialize extensions
-    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
+    # Initialize extensions  
+    # Allow all origins in development with proper CORS headers
+    CORS(app, 
+         resources={r"/*": {"origins": "*"}},
+         allow_headers=["Content-Type", "Authorization"],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
     JWTManager(app)
     
     # Initialize MongoDB
