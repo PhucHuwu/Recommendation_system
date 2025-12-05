@@ -312,8 +312,8 @@ Recommendation_system/
 ```bash
 # Login
 POST /api/auth/login
-Body: { "user_id": 1 }
-Response: { "token": "jwt-token", "user": { "user_id": 1 } }
+Body: { "user_id": 0 }
+Response: { "token": "jwt-token", "user": { "user_id": 0 } }
 ```
 
 ### Recommendations
