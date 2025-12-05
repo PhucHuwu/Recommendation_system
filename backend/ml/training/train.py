@@ -233,7 +233,7 @@ def main():
     print("PHASE 2: ITEM-BASED COLLABORATIVE FILTERING")
     print(f"{'='*80}")
     
-    item_model = ItemBasedCF(k_similar=30, similarity='adjusted_cosine')
+    item_model = ItemBasedCF(k_similar=30, similarity='adjusted_cosine', min_ratings=100)
     item_model.fit(train_data)
     
     item_metrics = evaluate_model(item_model, train_data, test_data, k=10)

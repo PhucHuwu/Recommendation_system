@@ -101,11 +101,22 @@ class RecommendationService:
         Returns:
             True if successful
         """
-        if model_name not in self.models:
-            if not self.load_model(model_name):
-                return False
+        # ALWAYS reload model from disk to get latest trained version
+        # This ensures that newly trained models are used immediately
+        print(f"[RecommendationService] Activating model: {model_name}")
+        print(f"[RecommendationService] Reloading from disk to get latest version...")
+        
+        # Remove old model from cache if exists
+        if model_name in self.models:
+            del self.models[model_name]
+        
+        # Load fresh model from disk
+        if not self.load_model(model_name):
+            print(f"[RecommendationService] Failed to load model: {model_name}")
+            return False
         
         self.active_model = model_name
+        print(f"[RecommendationService] Successfully activated: {model_name}")
         return True
     
     def get_recommendations(

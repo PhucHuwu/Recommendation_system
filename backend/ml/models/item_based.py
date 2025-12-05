@@ -17,21 +17,24 @@ from typing import List, Tuple, Optional
 class ItemBasedCF:
     """Item-Based Collaborative Filtering Model"""
     
-    def __init__(self, k_similar: int = 30, similarity: str = 'adjusted_cosine'):
+    def __init__(self, k_similar: int = 30, similarity: str = 'adjusted_cosine', min_ratings: int = 10):
         """
         Initialize Item-Based CF
         
         Args:
             k_similar: Number of similar items to consider for prediction
             similarity: Similarity metric ('cosine' or 'adjusted_cosine')
+            min_ratings: Minimum number of ratings for an anime to be recommended
         """
         self.k_similar = k_similar
         self.similarity_metric = similarity
+        self.min_ratings = min_ratings
         
         # Model state
         self.user_item_matrix = None
         self.item_similarity = None
         self.user_means = None  # For adjusted cosine
+        self.item_rating_counts = None  # Count of ratings per item
         
         # Mappings
         self.user_id_map = {}
@@ -79,6 +82,13 @@ class ItemBasedCF:
         sparsity = 1 - (self.user_item_matrix.nnz / (self.user_item_matrix.shape[0] * self.user_item_matrix.shape[1]))
         print(f"  Matrix shape: {self.user_item_matrix.shape}")
         print(f"  Sparsity: {sparsity * 100:.2f}%")
+        
+        # Count ratings per item (for popularity filtering)
+        self.item_rating_counts = np.array(
+            (self.user_item_matrix > 0).sum(axis=0)
+        ).flatten()
+        popular_items = (self.item_rating_counts >= self.min_ratings).sum()
+        print(f"  Items with >= {self.min_ratings} ratings: {popular_items:,}")
         
         # Compute user means (for adjusted cosine)
         print("  Computing user means...")
@@ -234,6 +244,11 @@ class ItemBasedCF:
             
         predictions = np.clip(predictions, 0, 10)
         
+        # Filter out unpopular items (items with too few ratings)
+        if self.item_rating_counts is not None:
+            unpopular_mask = self.item_rating_counts < self.min_ratings
+            predictions[unpopular_mask] = 0
+        
         # Exclude rated animes
         if exclude_rated:
             predictions[rated_animes] = 0
@@ -288,9 +303,11 @@ class ItemBasedCF:
             pickle.dump({
                 'k_similar': self.k_similar,
                 'similarity_metric': self.similarity_metric,
+                'min_ratings': self.min_ratings,
                 'user_item_matrix': self.user_item_matrix,
                 'item_similarity': self.item_similarity,
                 'user_means': self.user_means,
+                'item_rating_counts': self.item_rating_counts,
                 'user_id_map': self.user_id_map,
                 'anime_id_map': self.anime_id_map,
                 'reverse_user_map': self.reverse_user_map,
@@ -306,11 +323,13 @@ class ItemBasedCF:
         
         model = cls(
             k_similar=data['k_similar'],
-            similarity=data['similarity_metric']
+            similarity=data['similarity_metric'],
+            min_ratings=data.get('min_ratings', 10)
         )
         model.user_item_matrix = data['user_item_matrix']
         model.item_similarity = data['item_similarity']
         model.user_means = data['user_means']
+        model.item_rating_counts = data.get('item_rating_counts', None)
         model.user_id_map = data['user_id_map']
         model.anime_id_map = data['anime_id_map']
         model.reverse_user_map = data['reverse_user_map']

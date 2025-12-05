@@ -20,8 +20,8 @@ def get_recommendations():
     
     # Get active model if not specified
     if not model:
-        active_model = db.models.find_one({'is_active': True})
-        model = active_model['name'] if active_model else 'user_based_cf'
+        active_model = db.model_registry.find_one({'is_active': True})
+        model = active_model['model_name'] if active_model else 'user_based_cf'
     
     # Get recommendation service
     rec_service = get_recommendation_service()
