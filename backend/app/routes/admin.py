@@ -209,13 +209,25 @@ def get_models():
     
     models = list(db.models.find({}, {'_id': 0}))
     
+    # Display name mapping
+    display_names = {
+        'user_based_cf': 'User-Based CF',
+        'item_based_cf': 'Item-Based CF',
+        'content_based': 'Content-Based'
+    }
+    
     # If no models in DB, return default list
     if not models:
         models = [
-            {'name': 'user_based', 'display_name': 'User-Based CF', 'is_active': True, 'status': 'not_trained'},
-            {'name': 'item_based', 'display_name': 'Item-Based CF', 'is_active': False, 'status': 'not_trained'},
+            {'name': 'user_based_cf', 'display_name': 'User-Based CF', 'is_active': False, 'status': 'not_trained'},
+            {'name': 'item_based_cf', 'display_name': 'Item-Based CF', 'is_active': False, 'status': 'not_trained'},
             {'name': 'content_based', 'display_name': 'Content-Based', 'is_active': False, 'status': 'not_trained'}
         ]
+    else:
+        # Add display_name if missing
+        for model in models:
+            if 'display_name' not in model:
+                model['display_name'] = display_names.get(model['name'], model['name'])
     
     return jsonify({'models': models}), 200
 

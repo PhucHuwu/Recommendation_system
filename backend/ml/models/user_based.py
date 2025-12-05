@@ -126,7 +126,7 @@ class UserBasedCF:
     
     def recommend(self, user_id: int, n: int = 10, exclude_rated: bool = True) -> List[Tuple[int, float]]:
         """
-        Recommend top N animes for a user
+        Recommend top N animes for a user using VECTORIZED computation
         
         Args:
             user_id: User ID
@@ -141,28 +141,52 @@ class UserBasedCF:
         
         user_idx = self.user_id_map[user_id]
         
-        # Get animes not rated by user
-        if exclude_rated:
-            rated_animes = self.user_item_matrix[user_idx].nonzero()[1]
-            candidate_animes = [i for i in range(self.user_item_matrix.shape[1]) if i not in rated_animes]
-        else:
-            candidate_animes = list(range(self.user_item_matrix.shape[1]))
+        # Get user's similarity row (keep sparse!)
+        user_sims = self.user_similarity[user_idx]
         
-        if not candidate_animes:
+        # Get top K most similar users
+        user_sims_dense = user_sims.toarray().flatten()
+        top_k_user_indices = np.argsort(user_sims_dense)[-self.k_neighbors:]
+        top_k_sims = user_sims_dense[top_k_user_indices]
+        
+        # Filter out users with zero similarity
+        positive_mask = top_k_sims > 0
+        if not positive_mask.any():
             return []
         
-        # Predict ratings for all candidates
-        predictions = []
-        for anime_idx in candidate_animes:
-            anime_id = self.reverse_anime_map[anime_idx]
-            pred_rating = self.predict(user_id, anime_id)
-            if pred_rating > 0:
-                predictions.append((anime_id, pred_rating))
+        top_k_user_indices = top_k_user_indices[positive_mask]
+        top_k_sims = top_k_sims[positive_mask]
         
-        # Sort by predicted rating
-        predictions.sort(key=lambda x: x[1], reverse=True)
+        # Get ratings from top K users (sparse sub-matrix)
+        top_k_ratings = self.user_item_matrix[top_k_user_indices, :]
         
-        return predictions[:n]
+        # VECTORIZED: Compute weighted average for ALL animes at once
+        # Shape: (k_users, n_animes) → weighted by similarity → (n_animes,)
+        sim_sum = top_k_sims.sum()
+        if sim_sum == 0:
+            return []
+        
+        # Weighted ratings: similarity weights × ratings matrix
+        weighted_ratings = top_k_ratings.T.dot(top_k_sims) / sim_sum
+        
+        # Clip predictions
+        predictions = np.clip(weighted_ratings, 0, 10)
+        
+        # Exclude rated animes
+        if exclude_rated:
+            rated_animes = self.user_item_matrix[user_idx].nonzero()[1]
+            predictions[rated_animes] = 0
+        
+        # Get top N
+        top_n_indices = np.argsort(predictions)[-n:][::-1]
+        
+        result = []
+        for idx in top_n_indices:
+            if predictions[idx] > 0:
+                anime_id = self.reverse_anime_map[idx]
+                result.append((anime_id, float(predictions[idx])))
+        
+        return result
     
     def save(self, filepath: str):
         """Save model to file"""
