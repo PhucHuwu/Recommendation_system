@@ -99,7 +99,7 @@ export default function VisualizationPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* 1. Rating Distribution - Histogram */}
+                {/* 1. Rating Distribution - Enhanced Histogram */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Phân bố Rating (1-10)</CardTitle>
@@ -108,12 +108,55 @@ export default function VisualizationPage() {
                         <div className="h-80">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={data?.rating_distribution || []}>
+                                    <defs>
+                                        {/* Gradient definitions for each rating */}
+                                        <linearGradient id="colorRating1" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#ef4444" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#dc2626" stopOpacity={0.7} />
+                                        </linearGradient>
+                                        <linearGradient id="colorRating2" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#f97316" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#ea580c" stopOpacity={0.7} />
+                                        </linearGradient>
+                                        <linearGradient id="colorRating3" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#d97706" stopOpacity={0.7} />
+                                        </linearGradient>
+                                        <linearGradient id="colorRating4" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#d97706" stopOpacity={0.7} />
+                                        </linearGradient>
+                                        <linearGradient id="colorRating5" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#eab308" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#ca8a04" stopOpacity={0.7} />
+                                        </linearGradient>
+                                        <linearGradient id="colorRating6" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#84cc16" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#65a30d" stopOpacity={0.7} />
+                                        </linearGradient>
+                                        <linearGradient id="colorRating7" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#22c55e" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#16a34a" stopOpacity={0.7} />
+                                        </linearGradient>
+                                        <linearGradient id="colorRating8" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#059669" stopOpacity={0.7} />
+                                        </linearGradient>
+                                        <linearGradient id="colorRating9" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#0891b2" stopOpacity={0.7} />
+                                        </linearGradient>
+                                        <linearGradient id="colorRating10" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#6366f1" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#4f46e5" stopOpacity={0.7} />
+                                        </linearGradient>
+                                    </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                                     <XAxis
                                         dataKey="_id"
                                         stroke="#9ca3af"
-                                        tick={{ fill: "#e5e7eb" }}
-                                        label={{ value: "Rating", position: "insideBottom", offset: -5, fill: "#e5e7eb" }}
+                                        tick={{ fill: "#e5e7eb", fontSize: 13, fontWeight: 600 }}
+                                        label={{ value: "⭐ Rating", position: "insideBottom", offset: -5, fill: "#e5e7eb", fontSize: 14 }}
                                     />
                                     <YAxis
                                         stroke="#9ca3af"
@@ -127,8 +170,17 @@ export default function VisualizationPage() {
                                         }}
                                         width={60}
                                     />
-                                    <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
-                                    <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                                    <Tooltip
+                                        contentStyle={customTooltipStyle}
+                                        itemStyle={customTooltipContent}
+                                        formatter={(value: any) => [formatNumber(value), "Số đánh giá"]}
+                                        labelFormatter={(label) => `⭐ Rating ${label}`}
+                                    />
+                                    <Bar dataKey="count" radius={[8, 8, 0, 0]} animationDuration={1000} animationBegin={0}>
+                                        {(data?.rating_distribution || []).map((entry: any, index: number) => (
+                                            <Cell key={`cell-${index}`} fill={`url(#colorRating${entry._id})`} stroke="#fff" strokeWidth={0} />
+                                        ))}
+                                    </Bar>
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
