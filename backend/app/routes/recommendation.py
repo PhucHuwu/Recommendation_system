@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import get_db
+from app.services.recommendation_service import get_recommendation_service
 
 recommendation_bp = Blueprint('recommendation', __name__)
 
@@ -20,29 +21,43 @@ def get_recommendations():
     # Get active model if not specified
     if not model:
         active_model = db.models.find_one({'is_active': True})
-        model = active_model['name'] if active_model else 'user_based'
+        model = active_model['name'] if active_model else 'user_based_cf'
     
-    # TODO: Replace with actual ML recommendation logic
-    # For now, return top-rated animes the user hasn't rated yet
+    # Get recommendation service
+    rec_service = get_recommendation_service()
     
-    # Get user's rated anime IDs
-    user_ratings = list(db.ratings.find({'user_id': user_id}, {'anime_id': 1}))
-    rated_anime_ids = [r['anime_id'] for r in user_ratings]
+    # Get recommendations from ML model
+    recommendations = rec_service.get_recommendations(user_id, n=limit, model_name=model)
     
-    # Get top animes user hasn't rated
-    recommendations = list(db.animes.find(
-        {'mal_id': {'$nin': rated_anime_ids}},
-        {'_id': 0}
-    ).sort('score', -1).limit(limit))
+    if not recommendations:
+        # Fallback: return top animes if no recommendations
+        user_ratings = list(db.ratings.find({'user_id': user_id}, {'anime_id': 1}))
+        rated_anime_ids = [r['anime_id'] for r in user_ratings]
+        
+        animes = list(db.animes.find(
+            {'mal_id': {'$nin': rated_anime_ids}},
+            {'_id': 0}
+        ).sort('score', -1).limit(limit))
+        
+        recommendations = [(a['mal_id'], a.get('score', 0)) for a in animes]
     
-    # Add predicted rating (placeholder - will be replaced by ML model)
-    for anime in recommendations:
-        anime['predicted_rating'] = anime.get('score', 0)
+    # Get anime details for recommendations
+    result = []
+    for anime_id, predicted_rating in recommendations:
+        anime = db.animes.find_one({'mal_id': anime_id}, {'_id': 0})
+        if anime:
+            result.append({
+                'anime_id': anime_id,
+                'name': anime.get('name'),
+                'genres': anime.get('genres'),
+                'score': anime.get('score'),
+                'predicted_rating': round(predicted_rating, 2)
+            })
     
     return jsonify({
-        'recommendations': recommendations,
+        'recommendations': result,
         'model_used': model,
-        'count': len(recommendations)
+        'count': len(result)
     }), 200
 
 
@@ -50,6 +65,8 @@ def get_recommendations():
 def get_similar_animes(anime_id):
     """Get similar animes based on content/genre"""
     limit = request.args.get('limit', 10, type=int)
+    use_content = request.args.get('use_content', 'false').lower() == 'true'
+    
     limit = min(limit, 20)
     
     db = get_db()
@@ -60,25 +77,29 @@ def get_similar_animes(anime_id):
     if not target_anime:
         return jsonify({'error': 'Anime not found'}), 404
     
-    # Get target genres
-    target_genres = target_anime.get('genres', '')
+    # Get recommendation service
+    rec_service = get_recommendation_service()
     
-    if not target_genres:
-        return jsonify({'animes': [], 'message': 'No genres found for this anime'}), 200
+    # Get similar animes from ML model
+    similar = rec_service.get_similar_animes(anime_id, n=limit, use_content=use_content)
     
-    # Find animes with similar genres (simple approach)
-    # TODO: Replace with content-based filtering using TF-IDF/embeddings
-    similar_animes = list(db.animes.find(
-        {
-            'mal_id': {'$ne': anime_id},
-            'genres': {'$regex': target_genres.split(',')[0].strip(), '$options': 'i'}
-        },
-        {'_id': 0}
-    ).sort('score', -1).limit(limit))
+    # Get anime details
+    result = []
+    for sim_anime_id, similarity in similar:
+        anime = db.animes.find_one({'mal_id': sim_anime_id}, {'_id': 0})
+        if anime:
+            result.append({
+                'anime_id': sim_anime_id,
+                'name': anime.get('name'),
+                'genres': anime.get('genres'),
+                'score': anime.get('score'),
+                'similarity': round(similarity, 4)
+            })
     
     return jsonify({
         'anime_id': anime_id,
         'anime_name': target_anime.get('name'),
-        'similar_animes': similar_animes,
-        'count': len(similar_animes)
+        'similar_animes': result,
+        'count': len(result),
+        'method': 'content-based' if use_content else 'item-based'
     }), 200

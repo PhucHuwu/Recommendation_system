@@ -30,3 +30,4 @@ data/raw/
 ml/saved_models/*.pkl
 .next/
 node_modules/
+*.pkl

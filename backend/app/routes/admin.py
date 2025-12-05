@@ -130,17 +130,24 @@ def select_model():
         return jsonify({'error': 'model_name is required'}), 400
     
     model_name = data['model_name']
-    valid_models = ['user_based', 'item_based', 'content_based']
+    valid_models = ['user_based_cf', 'item_based_cf', 'content_based']
     
     if model_name not in valid_models:
         return jsonify({'error': f'Invalid model. Choose from: {valid_models}'}), 400
     
+    # Update recommendation service
+    from app.services.recommendation_service import get_recommendation_service
+    rec_service = get_recommendation_service()
+    
+    if not rec_service.set_active_model(model_name):
+        return jsonify({'error': f'Could not load model {model_name}'}), 500
+    
     db = get_db()
     
-    # Deactivate all models
+    # Deactivate all models in DB
     db.models.update_many({}, {'$set': {'is_active': False}})
     
-    # Activate selected model
+    # Activate selected model in DB
     db.models.update_one(
         {'name': model_name},
         {
