@@ -21,13 +21,13 @@ def login():
     
     db = get_db()
     
-    # Check if user exists in ratings (meaning they have rated something)
-    user_exists = db.ratings.find_one({'user_id': user_id})
-    
-    if not user_exists:
-        # Check if user_id is in valid range (for demo purposes)
-        # In production, you might want different validation
-        return jsonify({'error': 'User not found. Please use a valid user_id from the dataset.'}), 404
+    if user_id != 0:
+        user_exists = db.ratings.find_one({'user_id': user_id})
+        
+        if not user_exists:
+            # Check if user_id is in valid range (for demo purposes)
+            # In production, you might want different validation
+            return jsonify({'error': 'User not found. Please use a valid user_id from the dataset.'}), 404
     
     # Update or create user record
     db.users.update_one(

@@ -104,17 +104,13 @@ export function Header() {
                                         Lịch sử xem
                                     </Link>
                                 </DropdownMenuItem>
-                                {user?.user_id === 1 && (
-                                    <>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
-                                                <Settings className="h-4 w-4" />
-                                                Admin Dashboard
-                                            </Link>
-                                        </DropdownMenuItem>
-                                    </>
-                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                    <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
+                                        <Settings className="h-4 w-4" />
+                                        Admin Dashboard
+                                    </Link>
+                                </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={logout} className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive">
                                     <LogOut className="h-4 w-4" />
