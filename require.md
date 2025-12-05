@@ -51,11 +51,7 @@ print("Path to dataset files:", path)
 
 ### Chia dữ liệu Train/Test (80:20)
 
-| Model             | Cách chia       | Mục đích           |
-| ----------------- | --------------- | ------------------ |
-| **User-based**    | Theo `user_id`  | Tránh domain shift |
-| **Item-based**    | Theo `anime_id` | Tránh domain shift |
-| **Content-based** | Theo `genres`   | Tránh domain shift |
+- Chia dữ liệu để đảm bảo không bị domain shift
 
 ---
 
