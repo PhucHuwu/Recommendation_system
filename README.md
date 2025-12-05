@@ -268,7 +268,7 @@ Frontend will run at: `http://localhost:3000`
 ### 4. Access Application
 
 -   **Main Application**: http://localhost:3000
--   **Admin Panel**: http://localhost:3000/admin (requires admin login)
+-   **Admin Panel**: http://localhost:3000/admin
 -   **API Health Check**: http://localhost:5000/health
 
 ## Project Structure
