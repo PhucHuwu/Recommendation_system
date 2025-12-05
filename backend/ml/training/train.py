@@ -1,471 +1,285 @@
 """
-Training Pipeline for ML Models
+Training Pipeline for New Recommendation Models
 
-Train all recommendation models and save them.
+Trains User-Based CF, Item-Based CF, and Hybrid models with:
+- Stratified user-based data splitting
+- Comprehensive evaluation
+- Hyperparameter optimization for hybrid weights
 """
 
-import os
 import sys
-from pymongo import MongoClient
-from dotenv import load_dotenv
-from datetime import datetime
-
-# Add backend directory to path
-backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, backend_dir)
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from ml.models.user_based import UserBasedCF
 from ml.models.item_based import ItemBasedCF
-from ml.models.content_based import ContentBasedCF
-from ml.training.evaluate import evaluate_model
+from ml.models.hybrid import HybridWeightedCF
+from ml.training.evaluate import evaluate_model, compare_models
+from pymongo import MongoClient
+import os
+from dotenv import load_dotenv
+import numpy as np
+import random
+from typing import List, Dict, Tuple
+from collections import defaultdict
 
-# Load environment
+# Load environment variables
 load_dotenv()
 
-MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
-MONGODB_DB = os.getenv('MONGODB_DB', 'anime_recommendation')
 
-# Paths
-MODELS_DIR = os.path.join(os.path.dirname(__file__), '..', 'saved_models')
-os.makedirs(MODELS_DIR, exist_ok=True)
+def get_db_connection():
+    """Get MongoDB database connection"""
+    mongodb_uri = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
+    mongodb_db = os.getenv('MONGODB_DB', 'anime_recommendation')
+    client = MongoClient(mongodb_uri)
+    return client[mongodb_db]
 
 
-def load_data_from_mongodb():
-    """Load training data from MongoDB"""
-    print("=" * 60)
+def load_data_from_mongodb() -> Tuple[List[dict], List[dict]]:
+    """Load ratings and animes data from MongoDB"""
     print("Loading data from MongoDB...")
-    print("=" * 60)
     
-    client = MongoClient(MONGODB_URI)
-    db = client[MONGODB_DB]
+    db = get_db_connection()
+    ratings_collection = db['ratings']
+    animes_collection = db['animes']
     
     # Load ratings
-    print("Loading ratings...")
-    ratings_cursor = db.ratings.find({}, {'_id': 0, 'user_id': 1, 'anime_id': 1, 'rating': 1})
+    ratings_cursor = ratings_collection.find({}, {
+        '_id': 0,
+        'user_id': 1,
+        'anime_id': 1,
+        'rating': 1
+    })
     ratings_data = list(ratings_cursor)
-    print(f"  Loaded {len(ratings_data):,} ratings")
     
     # Load animes
-    print("Loading animes...")
-    animes_cursor = db.animes.find({}, {'_id': 0, 'mal_id': 1, 'name': 1, 'genres': 1, 'synopsis': 1})
+    animes_cursor = animes_collection.find({})
     animes_data = list(animes_cursor)
-    print(f"  Loaded {len(animes_data):,} animes")
     
-    client.close()
+    print(f"  Loaded {len(ratings_data):,} ratings")
+    print(f"  Loaded {len(animes_data):,} animes")
     
     return ratings_data, animes_data
 
 
-def split_by_user(ratings_data, test_ratio=0.2, min_ratings=5):
+def split_by_user(ratings_data: List[dict], test_ratio: float = 0.2, 
+                  min_ratings: int = 5, seed: int = 42) -> Tuple[List[dict], List[dict]]:
     """
-    Stratified split by user - chia ratings của MỖI user theo tỷ lệ 80/20
-    Đảm bảo mọi user trong test set đều có data trong train set (tránh cold start)
+    Stratified split by user - chia ratings của MỖI user theo train/test ratio
+    
+    Benefits:
+    - All users in test also in train (no cold start)
+    - Preserves user rating patterns
+    - Fair evaluation
     
     Args:
         ratings_data: List of rating dicts
-        test_ratio: Tỷ lệ test (default 0.2)
-        min_ratings: Số ratings tối thiểu để user được split (default 5)
-    
+        test_ratio: Fraction for test set (0-1)
+        min_ratings: Min ratings per user to include in  test
+        seed: Random seed
+        
     Returns:
-        train_data, test_data
+        (train_data, test_data)
     """
-    import random
-    random.seed(42)
+    random.seed(seed)
+    np.random.seed(seed)
     
-    # Group ratings by user
-    user_ratings = {}
-    for r in ratings_data:
-        user_id = r['user_id']
-        if user_id not in user_ratings:
-            user_ratings[user_id] = []
-        user_ratings[user_id].append(r)
+    print(f"\nSplitting data (Stratified by User, {int((1-test_ratio)*100)}/{int(test_ratio*100)})...")
+    
+    # Group by user
+    user_ratings = defaultdict(list)
+    for rating in ratings_data:
+        user_ratings[rating['user_id']].append(rating)
     
     train_data = []
     test_data = []
     
     for user_id, ratings in user_ratings.items():
-        n = len(ratings)
+        # Shuffle user's ratings
+        random.shuffle(ratings)
         
-        if n >= min_ratings:
-            # Shuffle ratings của user này
-            random.shuffle(ratings)
-            
-            # Split 80/20
-            split_idx = int(n * (1 - test_ratio))
-            train_data.extend(ratings[:split_idx])
-            test_data.extend(ratings[split_idx:])
+        # If user has enough ratings, split them
+        if len(ratings) >= min_ratings:
+            split_point = int(len(ratings) * (1 - test_ratio))
+            train_data.extend(ratings[:split_point])
+            test_data.extend(ratings[split_point:])
         else:
-            # User có ít ratings -> toàn bộ vào train
+            # Too few ratings, put all in train
             train_data.extend(ratings)
     
-    print(f"  Stratified split by USER (each user's ratings 80/20):")
-    print(f"    Users with >= {min_ratings} ratings: {sum(1 for u, r in user_ratings.items() if len(r) >= min_ratings):,}")
-    print(f"    Train ratings: {len(train_data):,}")
-    print(f"    Test ratings: {len(test_data):,}")
-    print(f"    Test users in train: {len(set(r['user_id'] for r in test_data) & set(r['user_id'] for r in train_data)):,}")
+    print(f"  Train: {len(train_data):,} ratings ({len(set([r['user_id'] for r in train_data])):,} users)")
+    print(f"  Test: {len(test_data):,} ratings ({len(set([r['user_id'] for r in test_data])):,} users)")
     
     return train_data, test_data
 
 
-def split_by_item(ratings_data, test_ratio=0.2, min_ratings=5):
+def optimize_hybrid_weights(user_model: UserBasedCF, item_model: ItemBasedCF,
+                           train_data: List[dict], test_data: List[dict]) -> float:
     """
-    Stratified split by item - chia ratings của MỖI anime theo tỷ lệ 80/20
-    Đảm bảo mọi anime trong test set đều có data trong train set
+    Find optimal weight for hybrid model using grid search
+    
+    Strategy:
+    - Try different weights (0.0 to 1.0)
+    - Evaluate on validation set (sample of test)
+    - Pick weight with best RMSE
     
     Args:
-        ratings_data: List of rating dicts
-        test_ratio: Tỷ lệ test (default 0.2)
-        min_ratings: Số ratings tối thiểu để anime được split (default 5)
-    
+        user_model: Trained user-based model
+        item_model: Trained item-based model
+        train_data: Training data
+        test_data: Testing data
+        
     Returns:
-        train_data, test_data
+        Optimal user_weight (alpha)
     """
-    import random
-    random.seed(42)
+    print(f"\n{'='*60}")
+    print("OPTIMIZING HYBRID WEIGHTS")
+    print(f"{'='*60}")
     
-    # Group ratings by anime
-    anime_ratings = {}
-    for r in ratings_data:
-        anime_id = r['anime_id']
-        if anime_id not in anime_ratings:
-            anime_ratings[anime_id] = []
-        anime_ratings[anime_id].append(r)
+    # Sample validation set (smaller for speed)
+    val_size = min(1000, len(test_data))
+    val_data = random.sample(test_data, val_size)
     
-    train_data = []
-    test_data = []
+    best_alpha = 0.5
+    best_rmse = float('inf')
     
-    for anime_id, ratings in anime_ratings.items():
-        n = len(ratings)
+    # Grid search
+    alphas = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    
+    print(f"\nTrying {len(alphas)} different weights on {val_size} validation samples...")
+    
+    for alpha in alphas:
+        hybrid = HybridWeightedCF(user_model, item_model, 
+                                  user_weight=alpha, item_weight=1-alpha)
         
-        if n >= min_ratings:
-            # Shuffle ratings của anime này
-            random.shuffle(ratings)
-            
-            # Split 80/20
-            split_idx = int(n * (1 - test_ratio))
-            train_data.extend(ratings[:split_idx])
-            test_data.extend(ratings[split_idx:])
-        else:
-            # Anime có ít ratings -> toàn bộ vào train
-            train_data.extend(ratings)
-    
-    print(f"  Stratified split by ANIME (each anime's ratings 80/20):")
-    print(f"    Animes with >= {min_ratings} ratings: {sum(1 for a, r in anime_ratings.items() if len(r) >= min_ratings):,}")
-    print(f"    Train ratings: {len(train_data):,}")
-    print(f"    Test ratings: {len(test_data):,}")
-    print(f"    Test animes in train: {len(set(r['anime_id'] for r in test_data) & set(r['anime_id'] for r in train_data)):,}")
-    
-    return train_data, test_data
-
-
-def split_by_genre(animes_data, test_ratio=0.2):
-    """
-    Split animes by genres for Content-Based CF
-    80% genres for training, 20% genres for testing
-    This prevents domain shift in content-based models
-    """
-    import random
-    random.seed(42)
-    
-    # Get all unique genres
-    all_genres = set()
-    for anime in animes_data:
-        genres = anime.get('genres', [])
-        if isinstance(genres, list):
-            all_genres.update(genres)
-        elif isinstance(genres, str):
-            all_genres.update([g.strip() for g in genres.split(',')])
-    
-    unique_genres = list(all_genres)
-    random.shuffle(unique_genres)
-    
-    split_idx = int(len(unique_genres) * (1 - test_ratio))
-    train_genres = set(unique_genres[:split_idx])
-    test_genres = set(unique_genres[split_idx:])
-    
-    # Assign anime to train or test based on primary genre
-    train_data = []
-    test_data = []
-    
-    for anime in animes_data:
-        genres = anime.get('genres', [])
-        if isinstance(genres, str):
-            genres = [g.strip() for g in genres.split(',')]
+        # Compute RMSE on validation
+        errors = []
+        for rating in val_data:
+            pred = hybrid.predict(rating['user_id'], rating['anime_id'])
+            if pred > 0:
+                errors.append((rating['rating'] - pred) ** 2)
         
-        # Check if primary genre is in test set
-        if genres:
-            primary_genre = genres[0]
-            if primary_genre in test_genres:
-                test_data.append(anime)
-            else:
-                train_data.append(anime)
-        else:
-            train_data.append(anime)  # No genre = train
-    
-    print(f"  Split by GENRE:")
-    print(f"    Train genres: {len(train_genres):,}, Train animes: {len(train_data):,}")
-    print(f"    Test genres: {len(test_genres):,}, Test animes: {len(test_data):,}")
-    
-    return train_data, test_data, train_genres, test_genres
-
-
-def train_user_based_cf(train_data, test_data):
-    """Train User-Based Collaborative Filtering"""
-    print("\n" + "=" * 60)
-    print("TRAINING: User-Based CF")
-    print("=" * 60)
-    
-    model = UserBasedCF(k_neighbors=50)
-    model.fit(train_data)
-    
-    # Evaluate model with train_data for Precision@K, Recall@K
-    print("\nEvaluating User-Based CF...")
-    metrics = evaluate_model(model, test_data, train_data=train_data, k=10)
-    
-    # Save model
-    model_path = os.path.join(MODELS_DIR, 'user_based_cf.pkl')
-    model.save(model_path)
-    
-    return model, metrics
-
-
-def train_item_based_cf(train_data, test_data):
-    """Train Item-Based Collaborative Filtering"""
-    print("\n" + "=" * 60)
-    print("TRAINING: Item-Based CF")
-    print("=" * 60)
-    
-    model = ItemBasedCF(k_similar=30)
-    model.fit(train_data)
-    
-    # Evaluate model with train_data for Precision@K, Recall@K
-    print("\nEvaluating Item-Based CF...")
-    metrics = evaluate_model(model, test_data, train_data=train_data, k=10)
-    
-    # Save model
-    model_path = os.path.join(MODELS_DIR, 'item_based_cf.pkl')
-    model.save(model_path)
-    
-    return model, metrics
-
-
-def train_content_based(animes_data, train_ratings, test_ratings):
-    """Train Content-Based Filtering"""
-    print("\n" + "=" * 60)
-    print("TRAINING: Content-Based")
-    print("=" * 60)
-    
-    model = ContentBasedCF(use_synopsis=True, use_genres=True)
-    model.fit(animes_data)  # Fit on all animes to build similarity matrix
-    
-    # Evaluate content-based model using user ratings
-    print("\nEvaluating Content-Based...")
-    metrics = evaluate_content_based(model, train_ratings, test_ratings, k=10)
-    
-    # Save model
-    model_path = os.path.join(MODELS_DIR, 'content_based.pkl')
-    model.save(model_path)
-    
-    return model, metrics
-
-
-def evaluate_content_based(model, train_ratings, test_ratings, k=10):
-    """
-    Evaluate Content-Based model using user ratings
-    
-    For each user:
-    1. Get their liked animes from train set (rating >= 7)
-    2. Recommend similar animes based on content
-    3. Check if recommendations match their test set likes
-    """
-    import numpy as np
-    import random
-    
-    print(f"  Evaluating on user ratings...")
-    
-    # Build user train/test item mappings
-    user_train_items = {}
-    user_train_liked = {}  # Items with rating >= 7
-    for r in train_ratings:
-        uid = r['user_id']
-        if uid not in user_train_items:
-            user_train_items[uid] = set()
-            user_train_liked[uid] = []
-        user_train_items[uid].add(r['anime_id'])
-        if r['rating'] >= 7:
-            user_train_liked[uid].append(r['anime_id'])
-    
-    user_test_relevant = {}  # Test items with rating >= 7
-    for r in test_ratings:
-        uid = r['user_id']
-        if r['rating'] >= 7:
-            if uid not in user_test_relevant:
-                user_test_relevant[uid] = []
-            user_test_relevant[uid].append(r['anime_id'])
-    
-    # Sample users who have both train likes and test relevant items
-    valid_users = [u for u in user_test_relevant if u in user_train_liked and len(user_train_liked[u]) > 0]
-    sample_users = random.sample(valid_users, min(200, len(valid_users)))
-    
-    precisions = []
-    recalls = []
-    
-    for user_id in sample_users:
-        liked_animes = user_train_liked[user_id]
-        train_items = user_train_items[user_id]
-        relevant_animes = user_test_relevant[user_id]
-        
-        try:
-            # Get content-based recommendations based on user's liked animes
-            all_recommendations = {}
-            for liked_id in liked_animes[:5]:  # Use top 5 liked animes
-                if liked_id in model.anime_id_map:
-                    similar = model.get_similar_animes(liked_id, n=k * 3)
-                    for anime_id, score in similar:
-                        if anime_id not in train_items:  # Exclude already seen
-                            if anime_id not in all_recommendations:
-                                all_recommendations[anime_id] = 0
-                            all_recommendations[anime_id] += score
+        if len(errors) > 0:
+            rmse = np.sqrt(np.mean(errors))
+            print(f"  α={alpha:.1f}: RMSE={rmse:.4f} ({len(errors)} predictions)")
             
-            # Sort and get top K
-            sorted_recs = sorted(all_recommendations.items(), key=lambda x: x[1], reverse=True)
-            recommended_ids = [r[0] for r in sorted_recs[:k]]
-            
-            if recommended_ids and relevant_animes:
-                # Calculate precision and recall
-                hits = len(set(recommended_ids) & set(relevant_animes))
-                precision = hits / k
-                recall = hits / len(relevant_animes) if relevant_animes else 0
-                
-                precisions.append(precision)
-                recalls.append(recall)
-        except Exception as e:
-            continue
+            if rmse < best_rmse:
+                best_rmse = rmse
+                best_alpha = alpha
     
-    if precisions:
-        precision_k = np.mean(precisions)
-        recall_k = np.mean(recalls)
-        print(f"  Precision@{k}: {precision_k:.4f} (evaluated on {len(precisions)} users)")
-        print(f"  Recall@{k}: {recall_k:.4f}")
-    else:
-        precision_k = 0.0
-        recall_k = 0.0
-        print(f"  No valid users for evaluation")
+    print(f"\n✅ Best weight: α={best_alpha:.1f} (RMSE={best_rmse:.4f})")
     
-    return {
-        'rmse': None,  # Content-based doesn't predict ratings directly
-        'mae': None,
-        'precision_at_k': float(precision_k),
-        'recall_at_k': float(recall_k),
-        'coverage': len(precisions) / max(1, len(sample_users)),
-        'note': 'Content-based evaluated using user preference similarity'
+    return best_alpha
+
+
+def update_model_registry(model_name: str, metrics: Dict[str, float] = None, is_active: bool = False):
+    """Update model registry in database"""
+    db = get_db_connection()
+    registry = db['model_registry']
+    
+    from datetime import datetime
+    
+    # If activating this model, deactivate all others first
+    if is_active:
+        registry.update_many({}, {'$set': {'is_active': False}})
+    
+    update_data = {
+        'model_name': model_name,
+        'trained_at': datetime.now(),
+        'is_active': is_active
     }
-
-
-def update_model_registry(model_name, metrics=None):
-    """Update model registry in MongoDB"""
-    client = MongoClient(MONGODB_URI)
-    db = client[MONGODB_DB]
     
-    model_path = os.path.join(MODELS_DIR, f'{model_name}.pkl')
+    if metrics:
+        update_data['metrics'] = metrics
     
-    db.models.update_one(
-        {'name': model_name},
-        {
-            '$set': {
-                'name': model_name,
-                'trained_at': datetime.utcnow(),
-                'file_path': model_path,
-                'status': 'trained',
-                'metrics': metrics or {}
-            },
-            '$setOnInsert': {
-                'created_at': datetime.utcnow(),
-                'is_active': False
-            }
-        },
+    registry.update_one(
+        {'model_name': model_name},
+        {'$set': update_data},
         upsert=True
     )
-    
-    client.close()
-    print(f"  Updated model registry for {model_name}")
 
 
 def main():
     """Main training pipeline"""
-    print("\n" + "=" * 60)
-    print("RECOMMENDATION SYSTEM - TRAINING PIPELINE")
-    print("=" * 60)
+    print("\n" + "="*80)
+    print("TRAINING PIPELINE - NEW MODELS")
+    print("="*80)
     
-    try:
-        # Load data
-        ratings_data, animes_data = load_data_from_mongodb()
-        
-        # ===== COMMON SPLIT: Stratified by User =====
-        # All models use the same train/test split for fair comparison
-        print("\n" + "-" * 40)
-        print("Splitting data (Stratified by User - 80/20)...")
-        train_data, test_data = split_by_user(ratings_data, test_ratio=0.2)
-        
-        # ===== User-Based CF =====
-        user_based_model, user_based_metrics = train_user_based_cf(train_data, test_data)
-        update_model_registry('user_based_cf', metrics=user_based_metrics)
-        
-        # ===== Item-Based CF =====
-        # Use same split as User-Based for fair comparison
-        item_based_model, item_based_metrics = train_item_based_cf(train_data, test_data)
-        update_model_registry('item_based_cf', metrics=item_based_metrics)
-        
-        # ===== Content-Based =====
-        # Train on all animes, evaluate with user ratings
-        content_based_model, content_based_metrics = train_content_based(
-            animes_data, train_data, test_data
-        )
-        update_model_registry('content_based', metrics=content_based_metrics)
-        
-        print("\n" + "=" * 60)
-        print("TRAINING COMPLETE!")
-        print("=" * 60)
-        print(f"\nModels saved to: {MODELS_DIR}")
-        print("\nTrained models:")
-        print("  - user_based_cf.pkl")
-        print("  - item_based_cf.pkl")
-        print("  - content_based.pkl")
-        
-        print("\n" + "=" * 60)
-        print("METRICS SUMMARY (All models use same stratified user split)")
-        print("=" * 60)
-        print("\nUser-Based CF:")
-        for k, v in user_based_metrics.items():
-            if v is None:
-                print(f"  {k}: N/A")
-            elif isinstance(v, float):
-                print(f"  {k}: {v:.4f}")
-            else:
-                print(f"  {k}: {v}")
-        print("\nItem-Based CF:")
-        for k, v in item_based_metrics.items():
-            if v is None:
-                print(f"  {k}: N/A")
-            elif isinstance(v, float):
-                print(f"  {k}: {v:.4f}")
-            else:
-                print(f"  {k}: {v}")
-        print("\nContent-Based:")
-        for k, v in content_based_metrics.items():
-            if v is None:
-                print(f"  {k}: N/A")
-            elif isinstance(v, float):
-                print(f"  {k}: {v:.4f}")
-            else:
-                print(f"  {k}: {v}")
-        
-    except Exception as e:
-        print(f"\nError during training: {e}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+    # Load data
+    ratings_data, animes_data = load_data_from_mongodb()
+    
+    # Split data (stratified by user)
+    train_data, test_data = split_by_user(ratings_data, test_ratio=0.2)
+    
+    # ===== USER-BASED CF =====
+    print(f"\n{'='*80}")
+    print("PHASE 1: USER-BASED COLLABORATIVE FILTERING")
+    print(f"{'='*80}")
+    
+    user_model = UserBasedCF(k_neighbors=50, similarity='cosine')
+    user_model.fit(train_data)
+    
+    user_metrics = evaluate_model(user_model, train_data, test_data, k=10)
+    
+    # Save model
+    models_dir = os.path.join(os.path.dirname(__file__), '../saved_models')
+    os.makedirs(models_dir, exist_ok=True)
+    user_model.save(os.path.join(models_dir, 'user_based_cf.pkl'))
+    
+    update_model_registry('user_based_cf', user_metrics, is_active=False)
+    
+    # ===== ITEM-BASED CF =====
+    print(f"\n{'='*80}")
+    print("PHASE 2: ITEM-BASED COLLABORATIVE FILTERING")
+    print(f"{'='*80}")
+    
+    item_model = ItemBasedCF(k_similar=30, similarity='adjusted_cosine')
+    item_model.fit(train_data)
+    
+    item_metrics = evaluate_model(item_model, train_data, test_data, k=10)
+    
+    # Save model
+    item_model.save(os.path.join(models_dir, 'item_based_cf.pkl'))
+    
+    update_model_registry('item_based_cf', item_metrics, is_active=False)
+    
+    # ===== HYBRID MODEL =====
+    print(f"\n{'='*80}")
+    print("PHASE 3: HYBRID MODEL")
+    print(f"{'='*80}")
+    
+    # Optimize weights
+    best_alpha = optimize_hybrid_weights(user_model, item_model, train_data, test_data)
+    
+    # Create hybrid with optimal weights
+    hybrid_model = HybridWeightedCF(
+        user_model, item_model,
+        user_weight=best_alpha,
+        item_weight=1-best_alpha
+    )
+    
+    # Evaluate hybrid
+    hybrid_metrics = evaluate_model(hybrid_model, train_data, test_data, k=10)
+    
+    # Save hybrid config
+    hybrid_model.save(os.path.join(models_dir,'hybrid.pkl'))
+    
+    # Activate hybrid model (best combined model)
+    update_model_registry('hybrid', hybrid_metrics, is_active=True)
+    
+    # ===== COMPARISON =====
+    print(f"\n{'='*80}")
+    print("FINAL COMPARISON")
+    print(f"{'='*80}")
+    
+    compare_models({
+        'User-Based CF': user_metrics,
+        'Item-Based CF': item_metrics,
+        'Hybrid': hybrid_metrics
+    })
+    
+    print("\n✅ Training complete! Models saved to ml/saved_models/")
+    
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -63,9 +63,8 @@ def get_recommendations():
 
 @recommendation_bp.route('/similar/<int:anime_id>', methods=['GET'])
 def get_similar_animes(anime_id):
-    """Get similar animes based on content/genre"""
+    """Get similar animes using Item-Based CF"""
     limit = request.args.get('limit', 10, type=int)
-    use_content = request.args.get('use_content', 'false').lower() == 'true'
     
     limit = min(limit, 20)
     
@@ -80,8 +79,8 @@ def get_similar_animes(anime_id):
     # Get recommendation service
     rec_service = get_recommendation_service()
     
-    # Get similar animes from ML model
-    similar = rec_service.get_similar_animes(anime_id, n=limit, use_content=use_content)
+    # Get similar animes from Item-Based CF
+    similar = rec_service.get_similar_animes(anime_id, n=limit)
     
     # Get anime details
     result = []
@@ -101,5 +100,5 @@ def get_similar_animes(anime_id):
         'anime_name': target_anime.get('name'),
         'similar_animes': result,
         'count': len(result),
-        'method': 'content-based' if use_content else 'item-based'
+        'method': 'item-based'
     }), 200

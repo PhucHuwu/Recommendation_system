@@ -26,7 +26,7 @@ import {
 const COLORS = {
     user_based_cf: "#6366f1",
     item_based_cf: "#10b981",
-    content_based: "#f59e0b",
+    hybrid: "#f59e0b",
 };
 
 const customTooltipStyle = {
@@ -42,6 +42,15 @@ const customTooltipContent = {
     color: "#e5e7eb",
     fontSize: "13px",
     fontWeight: 500,
+};
+
+const getModelDisplayName = (modelName: string): string => {
+    const displayNames: Record<string, string> = {
+        user_based_cf: "User-Based CF",
+        item_based_cf: "Item-Based CF",
+        hybrid: "Hybrid",
+    };
+    return displayNames[modelName] || modelName;
 };
 
 export default function ModelsComparePage() {
@@ -80,7 +89,7 @@ export default function ModelsComparePage() {
     const metricsData = models
         .filter((m) => m.metrics && Object.keys(m.metrics).length > 0)
         .map((m) => ({
-            name: m.name,
+            name: getModelDisplayName(m.name),
             RMSE: m.metrics.rmse || 0,
             MAE: m.metrics.mae || 0,
             "Precision@K": (m.metrics.precision_at_k || 0) * 100,
@@ -127,6 +136,9 @@ export default function ModelsComparePage() {
     const bestMAE = getBestModel("mae", true);
     const bestPrecision = getBestModel("precision_at_k");
     const bestRecall = getBestModel("recall_at_k");
+    const bestCoverage = getBestModel("coverage");
+    const bestDiversity = getBestModel("diversity");
+    const bestNovelty = getBestModel("novelty");
 
     return (
         <div className="space-y-6">
@@ -159,13 +171,16 @@ export default function ModelsComparePage() {
                                 <TableHead className="text-right">MAE ↓</TableHead>
                                 <TableHead className="text-right">Precision@K ↑</TableHead>
                                 <TableHead className="text-right">Recall@K ↑</TableHead>
+                                <TableHead className="text-right">Coverage ↑</TableHead>
+                                <TableHead className="text-right">Diversity ↑</TableHead>
+                                <TableHead className="text-right">Novelty ↑</TableHead>
                                 <TableHead>Trained At</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {models.map((model) => (
                                 <TableRow key={model.name}>
-                                    <TableCell className="font-medium">{model.name}</TableCell>
+                                    <TableCell className="font-medium">{getModelDisplayName(model.name)}</TableCell>
                                     <TableCell>
                                         {model.is_active ? <Badge className="bg-success">Active</Badge> : <Badge variant="secondary">Inactive</Badge>}
                                     </TableCell>
@@ -204,6 +219,36 @@ export default function ModelsComparePage() {
                                             <div className="flex items-center justify-end gap-2">
                                                 <span>{(model.metrics.recall_at_k * 100).toFixed(2)}%</span>
                                                 {bestRecall?.name === model.name && <TrendingUp className="h-4 w-4 text-success" />}
+                                            </div>
+                                        ) : (
+                                            "-"
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right font-mono">
+                                        {model.metrics?.coverage ? (
+                                            <div className="flex items-center justify-end gap-2">
+                                                <span>{(model.metrics.coverage * 100).toFixed(2)}%</span>
+                                                {bestCoverage?.name === model.name && <TrendingUp className="h-4 w-4 text-success" />}
+                                            </div>
+                                        ) : (
+                                            "-"
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right font-mono">
+                                        {model.metrics?.diversity ? (
+                                            <div className="flex items-center justify-end gap-2">
+                                                <span>{model.metrics.diversity.toFixed(4)}</span>
+                                                {bestDiversity?.name === model.name && <TrendingUp className="h-4 w-4 text-success" />}
+                                            </div>
+                                        ) : (
+                                            "-"
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right font-mono">
+                                        {model.metrics?.novelty ? (
+                                            <div className="flex items-center justify-end gap-2">
+                                                <span>{model.metrics.novelty.toFixed(2)}</span>
+                                                {bestNovelty?.name === model.name && <TrendingUp className="h-4 w-4 text-success" />}
                                             </div>
                                         ) : (
                                             "-"

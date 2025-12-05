@@ -8,7 +8,7 @@ import os
 from typing import List, Tuple, Optional
 from ml.models.user_based import UserBasedCF
 from ml.models.item_based import ItemBasedCF
-from ml.models.content_based import ContentBasedCF
+from ml.models.hybrid import HybridWeightedCF
 
 
 class RecommendationService:
@@ -35,7 +35,7 @@ class RecommendationService:
         Load a specific model
         
         Args:
-            model_name: Name of model (user_based_cf, item_based_cf, content_based)
+            model_name: Name of model (user_based_cf, item_based_cf, hybrid)
             
         Returns:
             True if loaded successfully
@@ -51,8 +51,22 @@ class RecommendationService:
                 self.models[model_name] = UserBasedCF.load(model_path)
             elif model_name == 'item_based_cf':
                 self.models[model_name] = ItemBasedCF.load(model_path)
-            elif model_name == 'content_based':
-                self.models[model_name] = ContentBasedCF.load(model_path)
+            elif model_name == 'hybrid':
+                # Hybrid needs both base models loaded first
+                if 'user_based_cf' not in self.models:
+                    self.load_model('user_based_cf')
+                if 'item_based_cf' not in self.models:
+                    self.load_model('item_based_cf')
+                
+                if 'user_based_cf' in self.models and 'item_based_cf' in self.models:
+                    self.models[model_name] = HybridWeightedCF.load(
+                        model_path,
+                        self.models['user_based_cf'],
+                        self.models['item_based_cf']
+                    )
+                else:
+                    print("Cannot load hybrid: base models not available")
+                    return False
             else:
                 print(f"Unknown model name: {model_name}")
                 return False
@@ -69,7 +83,7 @@ class RecommendationService:
         Returns:
             Dictionary of loaded models status
         """
-        models_to_load = ['user_based_cf', 'item_based_cf', 'content_based']
+        models_to_load = ['user_based_cf', 'item_based_cf', 'hybrid']
         results = {}
         
         for model_name in models_to_load:
@@ -124,8 +138,8 @@ class RecommendationService:
         
         model = self.models[target_model]
         
-        # Get recommendations (only for CF models)
-        if target_model in ['user_based_cf', 'item_based_cf']:
+        # Get recommendations (CF and Hybrid models support recommend())
+        if target_model in ['user_based_cf', 'item_based_cf', 'hybrid']:
             return model.recommend(user_id, n=n, exclude_rated=True)
         
         return []
@@ -133,21 +147,19 @@ class RecommendationService:
     def get_similar_animes(
         self, 
         anime_id: int, 
-        n: int = 10,
-        use_content: bool = False
+        n: int = 10
     ) -> List[Tuple[int, float]]:
         """
-        Get similar animes
+        Get similar animes using Item-Based CF
         
         Args:
             anime_id: Target anime ID
             n: Number of similar animes
-            use_content: Use content-based (True) or item-based (False)
             
         Returns:
             List of (anime_id, similarity_score) tuples
         """
-        model_name = 'content_based' if use_content else 'item_based_cf'
+        model_name = 'item_based_cf'
         
         # Load model if not loaded
         if model_name not in self.models:
@@ -186,8 +198,8 @@ class RecommendationService:
         
         model = self.models[target_model]
         
-        # Only CF models support prediction
-        if target_model in ['user_based_cf', 'item_based_cf']:
+        # CF and Hybrid models support prediction
+        if target_model in ['user_based_cf', 'item_based_cf', 'hybrid']:
             return model.predict(user_id, anime_id)
         
         return 0.0

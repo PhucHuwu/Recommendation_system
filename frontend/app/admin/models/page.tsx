@@ -115,10 +115,13 @@ export default function ModelsPage() {
                             <TableRow>
                                 <TableHead>Model</TableHead>
                                 <TableHead>Tên hiển thị</TableHead>
-                                <TableHead className="text-right">RMSE</TableHead>
-                                <TableHead className="text-right">MAE</TableHead>
-                                <TableHead className="text-right">Precision@K</TableHead>
-                                <TableHead className="text-right">Recall@K</TableHead>
+                                <TableHead className="text-right">RMSE ↓</TableHead>
+                                <TableHead className="text-right">MAE ↓</TableHead>
+                                <TableHead className="text-right">Precision@K ↑</TableHead>
+                                <TableHead className="text-right">Recall@K ↑</TableHead>
+                                <TableHead className="text-right">Coverage ↑</TableHead>
+                                <TableHead className="text-right">Diversity ↑</TableHead>
+                                <TableHead className="text-right">Novelty ↑</TableHead>
                                 <TableHead>Training Status</TableHead>
                                 <TableHead>Trạng thái</TableHead>
                                 <TableHead className="text-right">Hành động</TableHead>
@@ -132,11 +135,18 @@ export default function ModelsPage() {
                                     <TableCell className="text-right font-mono">{model.metrics?.rmse ? model.metrics.rmse.toFixed(4) : "-"}</TableCell>
                                     <TableCell className="text-right font-mono">{model.metrics?.mae ? model.metrics.mae.toFixed(4) : "-"}</TableCell>
                                     <TableCell className="text-right font-mono">
-                                        {model.metrics?.precision_at_k ? model.metrics.precision_at_k.toFixed(4) : "-"}
+                                        {model.metrics?.precision_at_k ? (model.metrics.precision_at_k * 100).toFixed(2) + "%" : "-"}
                                     </TableCell>
                                     <TableCell className="text-right font-mono">
-                                        {model.metrics?.recall_at_k ? model.metrics.recall_at_k.toFixed(4) : "-"}
+                                        {model.metrics?.recall_at_k ? (model.metrics.recall_at_k * 100).toFixed(2) + "%" : "-"}
                                     </TableCell>
+                                    <TableCell className="text-right font-mono">
+                                        {model.metrics?.coverage ? (model.metrics.coverage * 100).toFixed(2) + "%" : "-"}
+                                    </TableCell>
+                                    <TableCell className="text-right font-mono">
+                                        {model.metrics?.diversity ? model.metrics.diversity.toFixed(4) : "-"}
+                                    </TableCell>
+                                    <TableCell className="text-right font-mono">{model.metrics?.novelty ? model.metrics.novelty.toFixed(2) : "-"}</TableCell>
                                     <TableCell>
                                         <Badge variant={model.status === "trained" ? "default" : "secondary"}>{model.status || "not_trained"}</Badge>
                                     </TableCell>

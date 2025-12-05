@@ -207,27 +207,40 @@ def get_models():
     """Get list of available ML models"""
     db = get_db()
     
-    models = list(db.models.find({}, {'_id': 0}))
-    
-    # Display name mapping
-    display_names = {
+    # Define available models with display names
+    model_definitions = {
         'user_based_cf': 'User-Based CF',
         'item_based_cf': 'Item-Based CF',
-        'content_based': 'Content-Based'
+        'hybrid': 'Hybrid'
     }
     
-    # If no models in DB, return default list
-    if not models:
-        models = [
-            {'name': 'user_based_cf', 'display_name': 'User-Based CF', 'is_active': False, 'status': 'not_trained'},
-            {'name': 'item_based_cf', 'display_name': 'Item-Based CF', 'is_active': False, 'status': 'not_trained'},
-            {'name': 'content_based', 'display_name': 'Content-Based', 'is_active': False, 'status': 'not_trained'}
-        ]
-    else:
-        # Add display_name if missing
-        for model in models:
-            if 'display_name' not in model:
-                model['display_name'] = display_names.get(model['name'], model['name'])
+    models = []
+    
+    # Query from model_registry collection (not 'models')
+    for model_name, display_name in model_definitions.items():
+        # Get model from registry
+        model_doc = db.model_registry.find_one({'model_name': model_name})
+        
+        if model_doc:
+            # Model exists in registry (trained)
+            models.append({
+                'name': model_name,
+                'display_name': display_name,
+                'is_active': model_doc.get('is_active', False),
+                'trained_at': model_doc.get('trained_at'),
+                'metrics': model_doc.get('metrics', {}),
+                'status': 'trained'
+            })
+        else:
+            # Model not yet trained
+            models.append({
+                'name': model_name,
+                'display_name': display_name,
+                'is_active': False,
+                'trained_at': None,
+                'metrics': {},
+                'status': 'not_trained'
+            })
     
     return jsonify({'models': models}), 200
 
@@ -241,7 +254,7 @@ def select_model():
         return jsonify({'error': 'model_name is required'}), 400
     
     model_name = data['model_name']
-    valid_models = ['user_based_cf', 'item_based_cf', 'content_based']
+    valid_models = ['user_based_cf', 'item_based_cf', 'hybrid']
     
     if model_name not in valid_models:
         return jsonify({'error': f'Invalid model. Choose from: {valid_models}'}), 400
@@ -255,15 +268,15 @@ def select_model():
     
     db = get_db()
     
-    # Deactivate all models in DB
-    db.models.update_many({}, {'$set': {'is_active': False}})
+    # Deactivate all models in registry
+    db.model_registry.update_many({}, {'$set': {'is_active': False}})
     
-    # Activate selected model in DB
-    db.models.update_one(
-        {'name': model_name},
+    # Activate selected model in registry
+    db.model_registry.update_one(
+        {'model_name': model_name},
         {
             '$set': {'is_active': True, 'activated_at': datetime.utcnow()},
-            '$setOnInsert': {'name': model_name, 'created_at': datetime.utcnow()}
+            '$setOnInsert': {'model_name': model_name, 'created_at': datetime.utcnow()}
         },
         upsert=True
     )
@@ -297,13 +310,14 @@ def compare_models():
     """Compare metrics of all models"""
     db = get_db()
     
-    models = list(db.models.find({}, {'_id': 0}))
+    # Get all models from model_registry
+    models = list(db.model_registry.find({}, {'_id': 0}))
     
-    # Return comparison data (metrics will be populated after training)
+    # Return comparison data
     comparison = []
     for model in models:
         comparison.append({
-            'name': model.get('name'),
+            'name': model.get('model_name'),  # Use model_name not name
             'metrics': model.get('metrics', {}),
             'trained_at': model.get('trained_at'),
             'is_active': model.get('is_active', False)
