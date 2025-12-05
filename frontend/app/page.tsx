@@ -68,7 +68,7 @@ export default function HomePage() {
                             Khám phá <span className="text-primary">Anime</span> phù hợp với bạn
                         </h1>
                         <p className="text-lg md:text-xl text-muted-foreground mb-8 text-pretty">
-                            Hệ thống gợi ý thông minh của Wibiflix sẽ giúp bạn tìm ra những bộ anime hay nhất dựa trên sở thích và lịch sử xem của bạn.
+                            Hệ thống gợi ý thông minh của WibiFlix sẽ giúp bạn tìm ra những bộ anime hay nhất dựa trên sở thích và lịch sử xem của bạn.
                         </p>
                         <div className="flex flex-wrap gap-4">
                             {isAuthenticated ? (

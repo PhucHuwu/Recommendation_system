@@ -15,8 +15,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const USER_STORAGE_KEY = "wibiflix_user";
-const TOKEN_STORAGE_KEY = "wibiflix_token";
+const USER_STORAGE_KEY = "WibiFlix_user";
+const TOKEN_STORAGE_KEY = "WibiFlix_token";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
