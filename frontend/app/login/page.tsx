@@ -25,8 +25,8 @@ export default function LoginPage() {
         setError("");
 
         const id = Number.parseInt(userId, 10);
-        if (isNaN(id) || id <= 0) {
-            setError("Vui lòng nhập User ID hợp lệ (số nguyên dương)");
+        if (isNaN(id) || id < 0) {
+            setError("Vui lòng nhập User ID hợp lệ (số nguyên không âm)");
             return;
         }
 
@@ -64,11 +64,11 @@ export default function LoginPage() {
                                     <Input
                                         id="userId"
                                         type="number"
-                                        placeholder="Nhập User ID (ví dụ: 12345)"
+                                        placeholder="Nhập User ID (ví dụ: 0, 12345)"
                                         value={userId}
                                         onChange={(e) => setUserId(e.target.value)}
                                         className="pl-10"
-                                        min="1"
+                                        min="0"
                                         required
                                     />
                                 </div>
