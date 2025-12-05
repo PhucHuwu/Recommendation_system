@@ -419,7 +419,7 @@ python debug_recommend.py
 # Login
 curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"user_id": 1}'
+  -d '{"user_id": 0}'
 
 # Get recommendations (with token)
 curl http://localhost:5000/api/recommendation?limit=10 \
