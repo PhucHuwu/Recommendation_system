@@ -6,15 +6,34 @@ from app.services.recommendation_service import get_recommendation_service
 recommendation_bp = Blueprint('recommendation', __name__)
 
 
+# ========================= K VALUE RECOMMENDATIONS =========================
+# Homepage recommendations: K = 5-10 (high precision, focused list)
+# Similar anime section: K = 6-12 (balanced precision/recall)
+# Search results: K = 20-30 (higher recall for exploration)
+# Evaluation/Training: K = 10-20 (standard for metrics)
+# ===========================================================================
+
+DEFAULT_K_HOMEPAGE = 10      # Recommendations on homepage
+DEFAULT_K_SIMILAR = 12       # Similar anime suggestions
+DEFAULT_K_SEARCH = 20        # Search results
+MAX_K_LIMIT = 50             # Maximum allowed K
+
+
 @recommendation_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_recommendations():
-    """Get personalized recommendations for the current user"""
+    """Get personalized recommendations for the current user
+    
+    K Value Strategy:
+    - Default K=10 optimized for homepage (high precision)
+    - Lower K (5-10): Better precision, user sees only best matches
+    - Higher K (15-30): Better recall, more exploration options
+    """
     user_id = int(get_jwt_identity())
-    limit = request.args.get('limit', 10, type=int)
+    limit = request.args.get('limit', DEFAULT_K_HOMEPAGE, type=int)
     model = request.args.get('model', None)  # Allow specifying model
     
-    limit = min(limit, 50)
+    limit = min(limit, MAX_K_LIMIT)
     
     db = get_db()
     
@@ -63,10 +82,15 @@ def get_recommendations():
 
 @recommendation_bp.route('/similar/<int:anime_id>', methods=['GET'])
 def get_similar_animes(anime_id):
-    """Get similar animes using Item-Based CF"""
-    limit = request.args.get('limit', 10, type=int)
+    """Get similar animes using Item-Based CF
     
-    limit = min(limit, 20)
+    K Value Strategy:
+    - Default K=12 for similar anime section (balanced)
+    - Capped at 20 to maintain precision quality
+    """
+    limit = request.args.get('limit', DEFAULT_K_SIMILAR, type=int)
+    
+    limit = min(limit, 20)  # Cap for similar section (quality > quantity)
     
     db = get_db()
     

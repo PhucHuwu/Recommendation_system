@@ -14,6 +14,14 @@ from ml.services.faiss_service import FAISSService
 
 search_bp = Blueprint('search', __name__)
 
+# ========================= K VALUE RECOMMENDATIONS =========================
+# Vector search: K = 20-30 (exploration mode, higher recall)
+# Similar anime: K = 6-12 (quality focused)
+# ===========================================================================
+DEFAULT_K_VECTOR_SEARCH = 20   # Default for vector search (exploration)
+DEFAULT_K_SIMILAR = 12         # Default for similar anime
+MAX_K_LIMIT = 50               # Maximum allowed K
+
 # Global services (lazy loaded)
 _embedding_service = None
 _faiss_service = None
@@ -78,8 +86,8 @@ def vector_search():
         if not query or len(query) < 2:
             return jsonify({'error': 'Query must be at least 2 characters'}), 400
         
-        limit = data.get('limit', 10)
-        limit = min(limit, 50)  # Cap at 50
+        limit = data.get('limit', DEFAULT_K_VECTOR_SEARCH)
+        limit = min(limit, MAX_K_LIMIT)  # Cap at max
         
         # Get services
         embedding_service = get_embedding_service()
@@ -138,8 +146,8 @@ def find_similar(anime_id):
         }
     """
     try:
-        limit = request.args.get('limit', 10, type=int)
-        limit = min(limit, 50)
+        limit = request.args.get('limit', DEFAULT_K_SIMILAR, type=int)
+        limit = min(limit, MAX_K_LIMIT)
         
         db = get_db()
         

@@ -18,8 +18,8 @@ scikit-surprise==1.1.4
 
 # Vector Search
 faiss-cpu==1.7.4
-sentence-transformers==2.2.2
-torch==2.0.1
+sentence-transformers>=2.2.0,<6.0.0
+torch==2.4.0
 
 # NLP
 nltk==3.8.1

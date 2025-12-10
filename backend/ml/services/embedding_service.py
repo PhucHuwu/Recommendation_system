@@ -25,15 +25,35 @@ class EmbeddingService:
         """
         print(f"Loading embedding model: {model_name}")
         
-        # Fix for meta tensor error: explicitly set device to cpu and add trust_remote_code
         import torch
+        import os
+        
+        # Workaround for meta tensor error with torch >= 2.9
+        # Disable meta device initialization
+        os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
+        
+        # Determine device
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         
-        self.model = SentenceTransformer(
-            model_name,
-            device=device,
-            trust_remote_code=True
-        )
+        try:
+            # First try normal loading
+            self.model = SentenceTransformer(
+                model_name,
+                device=device,
+                trust_remote_code=True
+            )
+        except NotImplementedError as e:
+            if "meta tensor" in str(e):
+                print("Meta tensor error detected, trying alternative loading method...")
+                # Alternative: Load without device first, then move
+                from transformers import AutoTokenizer, AutoModel
+                
+                # Load tokenizer and model separately
+                self.model = SentenceTransformer(model_name, device='cpu')
+                if device == 'cuda':
+                    self.model = self.model.to(device)
+            else:
+                raise e
         
         self.model_name = model_name
         self.embedding_dim = self.model.get_sentence_embedding_dimension()
