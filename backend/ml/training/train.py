@@ -278,7 +278,7 @@ def main():
         'Hybrid': hybrid_metrics
     })
     
-    print("\n✅ Training complete! Models saved to ml/saved_models/")
+    print("\nTraining complete! Models saved to ml/saved_models/")
     
 
 if __name__ == "__main__":
