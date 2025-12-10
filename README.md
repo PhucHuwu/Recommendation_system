@@ -91,12 +91,6 @@ graph TB
     UB -.->|Combine| HYB
     IB -.->|Combine| HYB
     NCF -.->|Combine| HYB
-
-    style FE fill:#61dafb,stroke:#333,stroke-width:2px,color:#000
-    style BE fill:#90ee90,stroke:#333,stroke-width:2px,color:#000
-    style DB fill:#47a248,stroke:#333,stroke-width:2px,color:#fff
-    style ML fill:#ffd700,stroke:#333,stroke-width:2px,color:#000
-    style HYB fill:#ff6b6b,stroke:#333,stroke-width:2px,color:#fff
 ```
 
 ### Components
