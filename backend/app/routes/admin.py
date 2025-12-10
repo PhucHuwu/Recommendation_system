@@ -211,7 +211,8 @@ def get_models():
     model_definitions = {
         'user_based_cf': 'User-Based CF',
         'item_based_cf': 'Item-Based CF',
-        'hybrid': 'Hybrid'
+        'hybrid': 'Hybrid',
+        'neural_cf': 'Neural CF'
     }
     
     models = []
@@ -254,7 +255,7 @@ def select_model():
         return jsonify({'error': 'model_name is required'}), 400
     
     model_name = data['model_name']
-    valid_models = ['user_based_cf', 'item_based_cf', 'hybrid']
+    valid_models = ['user_based_cf', 'item_based_cf', 'hybrid', 'neural_cf']
     
     if model_name not in valid_models:
         return jsonify({'error': f'Invalid model. Choose from: {valid_models}'}), 400

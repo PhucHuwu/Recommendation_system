@@ -27,6 +27,7 @@ const COLORS = {
     user_based_cf: "#6366f1",
     item_based_cf: "#10b981",
     hybrid: "#f59e0b",
+    neural_cf: "#ec4899",
 };
 
 const customTooltipStyle = {
@@ -49,6 +50,7 @@ const getModelDisplayName = (modelName: string): string => {
         user_based_cf: "User-Based CF",
         item_based_cf: "Item-Based CF",
         hybrid: "Hybrid",
+        neural_cf: "Neural CF",
     };
     return displayNames[modelName] || modelName;
 };

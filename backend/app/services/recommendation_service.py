@@ -9,6 +9,7 @@ from typing import List, Tuple, Optional
 from ml.models.user_based import UserBasedCF
 from ml.models.item_based import ItemBasedCF
 from ml.models.hybrid import HybridWeightedCF
+from ml.models.neural_cf import NeuralCF
 
 
 class RecommendationService:
@@ -67,6 +68,13 @@ class RecommendationService:
                 else:
                     print("Cannot load hybrid: base models not available")
                     return False
+            elif model_name == 'neural_cf':
+                # Neural CF uses .pt extension
+                ncf_path = os.path.join(self.models_dir, f'{model_name}.pt')
+                if not os.path.exists(ncf_path):
+                    print(f"Neural CF model file not found: {ncf_path}")
+                    return False
+                self.models[model_name] = NeuralCF.load(ncf_path)
             else:
                 print(f"Unknown model name: {model_name}")
                 return False
@@ -83,7 +91,7 @@ class RecommendationService:
         Returns:
             Dictionary of loaded models status
         """
-        models_to_load = ['user_based_cf', 'item_based_cf', 'hybrid']
+        models_to_load = ['user_based_cf', 'item_based_cf', 'hybrid', 'neural_cf']
         results = {}
         
         for model_name in models_to_load:
@@ -149,8 +157,8 @@ class RecommendationService:
         
         model = self.models[target_model]
         
-        # Get recommendations (CF and Hybrid models support recommend())
-        if target_model in ['user_based_cf', 'item_based_cf', 'hybrid']:
+        # Get recommendations (CF, Hybrid, and Neural CF models support recommend())
+        if target_model in ['user_based_cf', 'item_based_cf', 'hybrid', 'neural_cf']:
             return model.recommend(user_id, n=n, exclude_rated=True)
         
         return []
@@ -209,8 +217,8 @@ class RecommendationService:
         
         model = self.models[target_model]
         
-        # CF and Hybrid models support prediction
-        if target_model in ['user_based_cf', 'item_based_cf', 'hybrid']:
+        # CF, Hybrid, and Neural CF models support prediction
+        if target_model in ['user_based_cf', 'item_based_cf', 'hybrid', 'neural_cf']:
             return model.predict(user_id, anime_id)
         
         return 0.0

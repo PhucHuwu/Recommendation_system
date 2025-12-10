@@ -280,16 +280,18 @@ class NeuralCF(nn.Module):
     
     def recommend(self, 
                   user_id: int,
-                  candidate_items: List[int],
                   n: int = 10,
+                  exclude_rated: bool = True,
+                  candidate_items: Optional[List[int]] = None,
                   device: str = 'cpu') -> List[Tuple[int, float]]:
         """
         Generate top-N recommendations for a user
         
         Args:
             user_id: User ID (original ID)
-            candidate_items: List of candidate anime IDs (original IDs) to rank
             n: Number of recommendations
+            exclude_rated: Whether to exclude already rated items (for compatibility)
+            candidate_items: Optional list of candidate anime IDs. If None, use all items
             device: Device for inference
             
         Returns:
@@ -298,15 +300,17 @@ class NeuralCF(nn.Module):
         self.eval()
         self.to(device)
         
-        if not candidate_items:
-            return []
-        
         # Map IDs if mappings exist
         if hasattr(self, 'user_id_map') and hasattr(self, 'item_id_map'):
             if user_id not in self.user_id_map:
                 return []  # Cannot recommend for unknown user
             
             mapped_user_id = self.user_id_map[user_id]
+            
+            # Get candidate items
+            if candidate_items is None:
+                # Use all known items
+                candidate_items = list(self.item_id_map.keys())
             
             # Filter candidates to only include known items
             valid_candidates = []
@@ -321,6 +325,8 @@ class NeuralCF(nn.Module):
         else:
             # No mapping, use IDs directly
             mapped_user_id = user_id
+            if candidate_items is None:
+                return []  # Cannot recommend without mappings or candidate items
             valid_candidates = candidate_items
             original_ids = candidate_items
         
@@ -340,6 +346,7 @@ class NeuralCF(nn.Module):
         item_scores.sort(key=lambda x: x[1], reverse=True)
         
         return item_scores[:n]
+
     
     def save(self, filepath: str):
         """Save model to file"""
