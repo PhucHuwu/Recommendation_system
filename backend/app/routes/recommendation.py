@@ -51,7 +51,7 @@ def get_recommendations():
                 'name': anime.get('name'),
                 'genres': anime.get('genres'),
                 'score': anime.get('score'),
-                'predicted_rating': round(predicted_rating, 2)
+                'predicted_rating': round(float(predicted_rating), 2)  # Convert numpy float32 to Python float
             })
     
     return jsonify({
@@ -92,7 +92,7 @@ def get_similar_animes(anime_id):
                 'name': anime.get('name'),
                 'genres': anime.get('genres'),
                 'score': anime.get('score'),
-                'similarity': round(similarity, 4)
+                'similarity': round(float(similarity), 4)  # Convert to Python float
             })
     
     return jsonify({
