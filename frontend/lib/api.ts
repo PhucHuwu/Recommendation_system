@@ -347,4 +347,36 @@ export const api = {
         }>("/admin/models/compare");
         return response;
     },
+
+    getTrainingStatus: async (jobId: string) => {
+        const response = await fetchApi<{
+            job_id: string;
+            model_name: string;
+            status: string;
+            progress: number;
+            current_step: string;
+            started_at: string | null;
+            completed_at: string | null;
+            metrics: Record<string, number> | null;
+            error: string | null;
+        }>(`/admin/models/train/status/${jobId}`);
+        return response;
+    },
+
+    listTrainingJobs: async (limit = 10) => {
+        const response = await fetchApi<{
+            jobs: Array<{
+                job_id: string;
+                model_name: string;
+                status: string;
+                progress: number;
+                current_step: string;
+                started_at: string | null;
+                completed_at: string | null;
+                metrics: Record<string, number> | null;
+                error: string | null;
+            }>;
+        }>(`/admin/models/train/jobs?limit=${limit}`);
+        return response;
+    },
 };

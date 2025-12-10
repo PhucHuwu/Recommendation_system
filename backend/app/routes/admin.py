@@ -287,23 +287,89 @@ def select_model():
 
 @admin_bp.route('/models/train', methods=['POST'])
 def train_model():
-    """Trigger model training (placeholder)"""
+    """Trigger model training in background"""
     data = request.get_json()
     
     if not data or 'model_name' not in data:
         return jsonify({'error': 'model_name is required'}), 400
     
     model_name = data['model_name']
+    valid_models = ['user_based_cf', 'item_based_cf', 'hybrid', 'neural_cf']
     
-    # TODO: Implement actual training logic
-    # For now, just return a job ID
-    job_id = f"train_{model_name}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+    if model_name not in valid_models:
+        return jsonify({'error': f'Invalid model. Choose from: {valid_models}'}), 400
     
-    return jsonify({
-        'message': f'Training job started for {model_name}',
-        'job_id': job_id,
-        'status': 'pending'
-    }), 202
+    # Get training service
+    from app.services.training_service import get_training_service
+    training_service = get_training_service()
+    
+    try:
+        # Create training job
+        job_id = training_service.create_job(model_name)
+        
+        # Start training in background
+        def run_training(job_id, service):
+            """Background training function"""
+            try:
+                # Mark as running
+                service.mark_running(job_id)
+                
+                # Import training function
+                from ml.training.individual_trainers import get_trainer
+                trainer = get_trainer(model_name)
+                
+                # Define progress callback
+                def progress_callback(progress: int, step: str):
+                    service.update_progress(job_id, progress, step)
+                
+                # Run training
+                model, metrics = trainer(progress_callback=progress_callback)
+                
+                # Mark as completed
+                service.mark_completed(job_id, metrics)
+                
+            except Exception as e:
+                import traceback
+                error_msg = f"{str(e)}\n{traceback.format_exc()}"
+                service.mark_failed(job_id, error_msg)
+        
+        # Start background thread
+        training_service.start_training_background(job_id, run_training)
+        
+        return jsonify({
+            'message': f'Training job started for {model_name}',
+            'job_id': job_id,
+            'status': 'pending'
+        }), 202
+        
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 409  # Conflict - another job running
+
+
+@admin_bp.route('/models/train/status/<job_id>', methods=['GET'])
+def get_training_status(job_id: str):
+    """Get status of a training job"""
+    from app.services.training_service import get_training_service
+    training_service = get_training_service()
+    
+    job = training_service.get_job(job_id)
+    
+    if not job:
+        return jsonify({'error': 'Job not found'}), 404
+    
+    return jsonify(job.to_dict()), 200
+
+
+@admin_bp.route('/models/train/jobs', methods=['GET'])
+def list_training_jobs():
+    """List recent training jobs"""
+    from app.services.training_service import get_training_service
+    training_service = get_training_service()
+    
+    limit = request.args.get('limit', 10, type=int)
+    jobs = training_service.list_jobs(limit=limit)
+    
+    return jsonify({'jobs': jobs}), 200
 
 
 @admin_bp.route('/models/compare', methods=['GET'])

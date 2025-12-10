@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Brain, CheckCircle2, Zap, AlertCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
+import { Brain, CheckCircle2, Zap, AlertCircle, Loader2, Play } from "lucide-react";
 import { api } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ModelsPage() {
     const [models, setModels] = useState<any[]>([]);
@@ -16,9 +19,53 @@ export default function ModelsPage() {
     const [activating, setActivating] = useState(false);
     const [message, setMessage] = useState("");
 
+    // Training states
+    const [trainingDialogOpen, setTrainingDialogOpen] = useState(false);
+    const [selectedModel, setSelectedModel] = useState<string | null>(null);
+    const [trainingJobId, setTrainingJobId] = useState<string | null>(null);
+    const [trainingStatus, setTrainingStatus] = useState<any>(null);
+
+    const { toast } = useToast();
+
     useEffect(() => {
         fetchModels();
     }, []);
+
+    // Poll training status
+    useEffect(() => {
+        if (!trainingJobId) return;
+
+        const pollInterval = setInterval(async () => {
+            try {
+                const status = await api.getTrainingStatus(trainingJobId);
+                setTrainingStatus(status);
+
+                // If completed or failed, stop polling
+                if (status.status === "completed" || status.status === "failed") {
+                    clearInterval(pollInterval);
+                    setTrainingJobId(null);
+
+                    if (status.status === "completed") {
+                        toast({
+                            title: "Training hoàn tất!",
+                            description: `Model ${status.model_name} đã được train thành công.`,
+                        });
+                        await fetchModels(); // Refresh models list
+                    } else {
+                        toast({
+                            title: "Training thất bại",
+                            description: status.error || "Có lỗi xảy ra",
+                            variant: "destructive",
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch training status:", error);
+            }
+        }, 3000); // Poll every 3 seconds
+
+        return () => clearInterval(pollInterval);
+    }, [trainingJobId, toast]);
 
     const fetchModels = async () => {
         setLoading(true);
@@ -47,6 +94,60 @@ export default function ModelsPage() {
         } finally {
             setActivating(false);
         }
+    };
+
+    const handleTrainClick = (modelName: string) => {
+        setSelectedModel(modelName);
+        setTrainingDialogOpen(true);
+    };
+
+    const handleConfirmTrain = async () => {
+        if (!selectedModel) return;
+
+        setTrainingDialogOpen(false);
+
+        try {
+            const response = await api.trainModel(selectedModel);
+            setTrainingJobId(response.job_id);
+            setTrainingStatus({
+                job_id: response.job_id,
+                model_name: selectedModel,
+                status: "pending",
+                progress: 0,
+                current_step: "Initializing...",
+            });
+
+            toast({
+                title: "Training đã bắt đầu",
+                description: `Model ${selectedModel} đang được train...`,
+            });
+        } catch (error: any) {
+            toast({
+                title: "Không thể bắt đầu training",
+                description: error.message || "Có lỗi xảy ra",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const getModelDisplayName = (name: string) => {
+        const names: Record<string, string> = {
+            user_based_cf: "User-Based CF",
+            item_based_cf: "Item-Based CF",
+            hybrid: "Hybrid",
+            neural_cf: "Neural CF",
+        };
+        return names[name] || name;
+    };
+
+    const getEstimatedTime = (modelName: string) => {
+        const times: Record<string, string> = {
+            user_based_cf: "2-3 phút",
+            item_based_cf: "2-3 phút",
+            hybrid: "3-5 phút",
+            neural_cf: "30-60 phút",
+        };
+        return times[modelName] || "5-10 phút";
     };
 
     if (loading) {
@@ -98,6 +199,23 @@ export default function ModelsPage() {
                         )}
                     </AlertDescription>
                 </Alert>
+            )}
+
+            {/* Training Progress */}
+            {trainingStatus && trainingStatus.status !== "completed" && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            Training {getModelDisplayName(trainingStatus.model_name)}
+                        </CardTitle>
+                        <CardDescription>{trainingStatus.current_step}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Progress value={trainingStatus.progress} className="h-2" />
+                        <p className="text-sm text-muted-foreground mt-2">{trainingStatus.progress}% hoàn thành</p>
+                    </CardContent>
+                </Card>
             )}
 
             {/* Models Table */}
@@ -154,12 +272,18 @@ export default function ModelsPage() {
                                         {model.is_active ? <Badge className="bg-success">Active</Badge> : <Badge variant="secondary">Inactive</Badge>}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        {!model.is_active && model.status === "trained" && (
-                                            <Button size="sm" variant="outline" onClick={() => handleActivateModel(model.name)} disabled={activating}>
-                                                <Zap className="h-4 w-4 mr-1" />
-                                                Kích hoạt
+                                        <div className="flex gap-2 justify-end">
+                                            {!model.is_active && model.status === "trained" && (
+                                                <Button size="sm" variant="outline" onClick={() => handleActivateModel(model.name)} disabled={activating}>
+                                                    <Zap className="h-4 w-4 mr-1" />
+                                                    Kích hoạt
+                                                </Button>
+                                            )}
+                                            <Button size="sm" variant="outline" onClick={() => handleTrainClick(model.name)} disabled={!!trainingJobId}>
+                                                <Play className="h-4 w-4 mr-1" />
+                                                Train
                                             </Button>
-                                        )}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -173,6 +297,43 @@ export default function ModelsPage() {
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>Models được train từ Backend. RMSE và MAE càng thấp càng tốt. Precision@K và Recall@K càng cao càng tốt.</AlertDescription>
             </Alert>
+
+            {/* Training Confirmation Dialog */}
+            <Dialog open={trainingDialogOpen} onOpenChange={setTrainingDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirm Training</DialogTitle>
+                        <DialogDescription>
+                            Bạn có chắc muốn train lại model <strong>{selectedModel ? getModelDisplayName(selectedModel) : ""}</strong>?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <Alert>
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>
+                                <p className="font-medium mb-2">Lưu ý:</p>
+                                <ul className="list-disc list-inside space-y-1 text-sm">
+                                    <li>Training sẽ sử dụng data mới nhất từ MongoDB</li>
+                                    <li>
+                                        Thời gian ước tính: <strong>{selectedModel ? getEstimatedTime(selectedModel) : ""}</strong>
+                                    </li>
+                                    <li>Chỉ có thể train 1 model tại 1 thời điểm</li>
+                                    <li>Bạn có thể đóng trang này, training vẫn tiếp tục</li>
+                                </ul>
+                            </AlertDescription>
+                        </Alert>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setTrainingDialogOpen(false)}>
+                            Hủy
+                        </Button>
+                        <Button onClick={handleConfirmTrain}>
+                            <Play className="h-4 w-4 mr-2" />
+                            Bắt đầu Training
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
