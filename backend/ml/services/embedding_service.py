@@ -24,10 +24,20 @@ class EmbeddingService:
                        Default: paraphrase-multilingual-MiniLM-L12-v2 (supports Vietnamese)
         """
         print(f"Loading embedding model: {model_name}")
-        self.model = SentenceTransformer(model_name)
+        
+        # Fix for meta tensor error: explicitly set device to cpu and add trust_remote_code
+        import torch
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        
+        self.model = SentenceTransformer(
+            model_name,
+            device=device,
+            trust_remote_code=True
+        )
+        
         self.model_name = model_name
         self.embedding_dim = self.model.get_sentence_embedding_dimension()
-        print(f"Model loaded. Embedding dimension: {self.embedding_dim}")
+        print(f"Model loaded on {device}. Embedding dimension: {self.embedding_dim}")
         
     def create_anime_text(self, anime: Dict) -> str:
         """
