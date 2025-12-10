@@ -24,10 +24,12 @@ export default function AnimePage() {
     const { isAuthenticated, token } = useAuth();
 
     const [animes, setAnimes] = useState<Anime[]>([]);
-    const [recommendations, setRecommendations] = useState<any[]>([]);
+    const [hybridRecommendations, setHybridRecommendations] = useState<any[]>([]);
+    const [userBasedRecommendations, setUserBasedRecommendations] = useState<any[]>([]);
     const [genres, setGenres] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
-    const [recLoading, setRecLoading] = useState(false);
+    const [hybridRecLoading, setHybridRecLoading] = useState(false);
+    const [userRecLoading, setUserRecLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
     const [selectedGenre, setSelectedGenre] = useState(searchParams.get("genre") || "");
     const [sortBy, setSortBy] = useState(searchParams.get("sort") || "score");
@@ -51,21 +53,39 @@ export default function AnimePage() {
         fetchGenres();
     }, []);
 
-    // Fetch recommendations for authenticated users
+    // Fetch hybrid recommendations for authenticated users
     useEffect(() => {
         if (isAuthenticated && token) {
-            const fetchRecommendations = async () => {
-                setRecLoading(true);
+            const fetchHybridRecommendations = async () => {
+                setHybridRecLoading(true);
                 try {
-                    const response = await api.getRecommendations(token, 10);
-                    setRecommendations(response.recommendations || []);
+                    const response = await api.getRecommendations(token, 10, "hybrid");
+                    setHybridRecommendations(response.recommendations || []);
                 } catch (error) {
-                    console.error("Failed to fetch recommendations:", error);
+                    console.error("Failed to fetch hybrid recommendations:", error);
                 } finally {
-                    setRecLoading(false);
+                    setHybridRecLoading(false);
                 }
             };
-            fetchRecommendations();
+            fetchHybridRecommendations();
+        }
+    }, [isAuthenticated, token]);
+
+    // Fetch user-based recommendations for authenticated users
+    useEffect(() => {
+        if (isAuthenticated && token) {
+            const fetchUserBasedRecommendations = async () => {
+                setUserRecLoading(true);
+                try {
+                    const response = await api.getRecommendations(token, 10, "user_based_cf");
+                    setUserBasedRecommendations(response.recommendations || []);
+                } catch (error) {
+                    console.error("Failed to fetch user-based recommendations:", error);
+                } finally {
+                    setUserRecLoading(false);
+                }
+            };
+            fetchUserBasedRecommendations();
         }
     }, [isAuthenticated, token]);
 
@@ -141,14 +161,31 @@ export default function AnimePage() {
                 <p className="text-muted-foreground">Khám phá {total.toLocaleString()} anime từ database</p>
             </div>
 
-            {/* Recommendations Section - Only for authenticated users */}
-            {isAuthenticated && (
+            {/* Hybrid Recommendations */}
+            {isAuthenticated && hybridRecommendations.length > 0 && (
                 <div className="mb-8">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Sparkles className="h-5 w-5 text-primary" />
-                        <h2 className="text-xl font-semibold">Gợi ý cho bạn</h2>
+                    <div className="flex items-center gap-3 mb-4">
+                        <Sparkles className="h-5 w-5 text-amber-500" />
+                        <h2 className="text-2xl font-bold">Gợi ý cho bạn</h2>
+                        <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
+                            Hybrid Model
+                        </Badge>
                     </div>
-                    <RecommendationList title="" items={recommendations} loading={recLoading} showScrollButtons={true} />
+                    <RecommendationList title="" items={hybridRecommendations} loading={hybridRecLoading} showScrollButtons={true} />
+                </div>
+            )}
+
+            {/* User-Based Recommendations */}
+            {isAuthenticated && userBasedRecommendations.length > 0 && (
+                <div className="mb-8">
+                    <div className="flex items-center gap-3 mb-4">
+                        <Sparkles className="h-5 w-5 text-blue-500" />
+                        <h2 className="text-2xl font-bold">Người khác cũng thích</h2>
+                        <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
+                            User-Based CF
+                        </Badge>
+                    </div>
+                    <RecommendationList title="" items={userBasedRecommendations} loading={userRecLoading} showScrollButtons={true} />
                 </div>
             )}
 
