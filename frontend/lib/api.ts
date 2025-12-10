@@ -269,6 +269,14 @@ export const api = {
             body: JSON.stringify({ anime_id: animeId }),
         }),
 
+    deleteFromHistory: (token: string, animeId: number) =>
+        fetchApi<{
+            message: string;
+        }>(`/history/${animeId}`, {
+            method: "DELETE",
+            token,
+        }),
+
     // ============ Admin ============
     getSystemStats: async () => {
         const response = await fetchApi<{

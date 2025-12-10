@@ -208,8 +208,17 @@ export default function HistoryPage() {
         }
     };
 
-    const handleRemoveFromHistory = (animeId: number) => {
-        setMyHistory((prev) => prev.filter((h) => h.anime_id !== animeId));
+    const handleRemoveFromHistory = async (animeId: number) => {
+        if (!token) return;
+
+        try {
+            await api.deleteFromHistory(token, animeId);
+            // Only update local state after successful API call
+            setMyHistory((prev) => prev.filter((h) => h.anime_id !== animeId));
+        } catch (error) {
+            console.error("Failed to delete from history:", error);
+            // Could show a toast notification here
+        }
     };
 
     if (authLoading || (!isAuthenticated && !authLoading)) {
