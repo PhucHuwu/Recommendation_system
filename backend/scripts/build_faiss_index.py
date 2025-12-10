@@ -1,117 +1,132 @@
 """
-Build FAISS Index Script
+Script to build FAISS index for anime vector search
 
 This script:
 1. Loads all anime from MongoDB
 2. Generates embeddings using sentence-transformers
-3. Builds FAISS index for similarity search
-4. Saves embeddings and index to disk
+3. Builds FAISS index
+4. Saves index and embeddings to disk
 """
 
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Add parent directory to path
-backend_dir = Path(__file__).parent.parent
-sys.path.insert(0, str(backend_dir))
+BACKEND_DIR = Path(__file__).parent.parent
+sys.path.insert(0, str(BACKEND_DIR))
 
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from ml.services.embedding_service import EmbeddingService
 from ml.services.faiss_service import FAISSService
 
-# Load environment variables
+# Load environment
 load_dotenv()
 
 # Configuration
 MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
 MONGODB_DB = os.getenv('MONGODB_DB', 'anime_recommendation')
-EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'sentence-transformers/all-MiniLM-L6-v2')
-EMBEDDINGS_PATH = os.getenv('EMBEDDINGS_PATH', 'ml/saved_models/anime_embeddings.pkl')
-FAISS_INDEX_PATH = os.getenv('FAISS_INDEX_PATH', 'ml/saved_models/faiss_index.bin')
-EMBEDDING_DIM = 384
+MODEL_NAME = 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
+
+# Use absolute paths based on backend directory
+FAISS_INDEX_PATH = str(BACKEND_DIR / 'ml' / 'saved_models' / 'faiss_index.bin')
+EMBEDDINGS_PATH = str(BACKEND_DIR / 'ml' / 'saved_models' / 'anime_embeddings.pkl')
 
 
 def main():
     """Main function to build FAISS index"""
     print("=" * 70)
-    print("Building FAISS Index for Vector Search")
+    print("Building FAISS Index for Anime Vector Search")
     print("=" * 70)
-    print()
     
-    # Step 1: Connect to MongoDB
-    print("[1/5] Connecting to MongoDB...")
     try:
+        # Step 1: Connect to MongoDB
+        print("\n[1/5] Connecting to MongoDB...")
         client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
-        client.server_info()
+        client.server_info()  # Test connection
         db = client[MONGODB_DB]
-        print(f"Connected to {MONGODB_DB}")
+        print(f"[OK] Connected to MongoDB: {MONGODB_DB}")
+        
+        # Step 2: Load anime data
+        print("\n[2/5] Loading anime data from MongoDB...")
+        animes = list(db.animes.find({}, {'_id': 0, 'mal_id': 1, 'name': 1, 
+                                           'synopsis': 1, 'genres': 1}))
+        
+        if not animes:
+            print("[ERROR] No anime found in database!")
+            print("Please run scripts/import_data.py first to import anime data.")
+            sys.exit(1)
+        
+        print(f"[OK] Loaded {len(animes)} anime from database")
+        
+        # Step 3: Generate embeddings
+        print("\n[3/5] Generating embeddings...")
+        print(f"Using model: {MODEL_NAME}")
+        print("This may take a few minutes...")
+        
+        embedding_service = EmbeddingService(model_name=MODEL_NAME)
+        embeddings = embedding_service.generate_anime_embeddings(animes, batch_size=32)
+        
+        # Extract anime IDs
+        anime_ids = [anime['mal_id'] for anime in animes]
+        
+        print(f"[OK] Generated embeddings: shape {embeddings.shape}")
+        
+        # Save embeddings to file
+        print(f"\nSaving embeddings to {EMBEDDINGS_PATH}...")
+        embedding_service.save_embeddings(embeddings, anime_ids, EMBEDDINGS_PATH)
+        print("[OK] Embeddings saved")
+        
+        # Step 4: Build FAISS index
+        print("\n[4/5] Building FAISS index...")
+        faiss_service = FAISSService(embedding_dim=embedding_service.embedding_dim)
+        faiss_service.build_index(embeddings, anime_ids, index_type='flat')
+        print("[OK] FAISS index built")
+        
+        # Step 5: Save FAISS index
+        print(f"\n[5/5] Saving FAISS index to {FAISS_INDEX_PATH}...")
+        faiss_service.save(FAISS_INDEX_PATH)
+        print("[OK] FAISS index saved")
+        
+        # Stats
+        print("\n" + "=" * 70)
+        print("Build Complete!")
+        print("=" * 70)
+        stats = faiss_service.get_stats()
+        print(f"Total anime indexed: {stats['total_anime']}")
+        print(f"Embedding dimension: {stats['embedding_dim']}")
+        print(f"Index file: {FAISS_INDEX_PATH}")
+        print(f"Embeddings file: {EMBEDDINGS_PATH}")
+        
+        # Test search
+        print("\n" + "=" * 70)
+        print("Testing search functionality...")
+        print("=" * 70)
+        
+        # Test with a sample query
+        test_query = "anime hành động với phép thuật"
+        print(f"\nTest query: '{test_query}'")
+        
+        query_embedding = embedding_service.generate_embedding(test_query)
+        result_ids, distances = faiss_service.search(query_embedding, k=5)
+        
+        print(f"\nTop 5 results:")
+        for i, (anime_id, distance) in enumerate(zip(result_ids, distances), 1):
+            anime = db.animes.find_one({'mal_id': anime_id}, {'name': 1, 'genres': 1})
+            print(f"{i}. {anime['name']}")
+            print(f"   Genres: {anime.get('genres', 'N/A')}")
+            print(f"   Distance: {distance:.4f}")
+        
+        print("\n[OK] Search test completed successfully!")
+        
+        client.close()
+        
     except Exception as e:
-        print(f"Failed to connect to MongoDB: {e}")
+        print(f"\n[ERROR] {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
-    
-    # Step 2: Load anime data
-    print("\n[2/5] Loading anime data...")
-    animes = list(db.animes.find({}, {
-        'mal_id': 1,
-        'name': 1,
-        'synopsis': 1,
-        'genres': 1,
-        '_id': 0
-    }))
-    
-    if not animes:
-        print("No anime found in database")
-        sys.exit(1)
-    
-    print(f"Loaded {len(animes)} anime")
-    
-    # Step 3: Generate embeddings
-    print(f"\n[3/5] Generating embeddings using {EMBEDDING_MODEL}...")
-    embedding_service = EmbeddingService(model_name=EMBEDDING_MODEL)
-    
-    embeddings, anime_ids = embedding_service.generate_anime_embeddings(
-        animes,
-        batch_size=32,
-        show_progress=True
-    )
-    
-    print(f"Generated embeddings: shape {embeddings.shape}")
-    
-    # Save embeddings to file
-    print(f"\nSaving embeddings to {EMBEDDINGS_PATH}...")
-    embedding_service.save_embeddings(embeddings, anime_ids, EMBEDDINGS_PATH)
-    print("Embeddings saved")
-    
-    # Step 4: Build FAISS index
-    print(f"\n[4/5] Building FAISS index...")
-    faiss_service = FAISSService(embedding_dim=EMBEDDING_DIM)
-    faiss_service.build_index(embeddings, anime_ids, index_type='flat')
-    print("FAISS index built")
-    
-    # Step 5: Save FAISS index
-    print(f"\n[5/5] Saving FAISS index to {FAISS_INDEX_PATH}...")
-    faiss_service.save(FAISS_INDEX_PATH)
-    print("FAISS index saved")
-    
-    # Summary
-    print("\n" + "=" * 70)
-    print("[OK] Build Complete!")
-    print("=" * 70)
-    print(f"\nIndex Statistics:")
-    stats = faiss_service.get_stats()
-    print(f"  - Total vectors: {stats['total_vectors']}")
-    print(f"  - Embedding dimension: {stats['embedding_dim']}")
-    print(f"  - Index type: {stats['index_type']}")
-    print(f"\nFiles created:")
-    print(f"  - {EMBEDDINGS_PATH}")
-    print(f"  - {FAISS_INDEX_PATH}")
-    print(f"  - {FAISS_INDEX_PATH}.meta")
-    print("\nYou can now use the vector search API!")
-    print()
-    
-    client.close()
 
 
 if __name__ == '__main__':

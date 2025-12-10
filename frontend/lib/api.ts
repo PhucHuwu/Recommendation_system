@@ -92,20 +92,10 @@ export const api = {
         return response;
     },
 
-    getTopAnimes: async (limit = 10) => {
-        const response = await fetchApi<{ animes: Anime[] }>(`/anime/top?limit=${limit}`);
-        return response;
-    },
-
-    getGenres: async () => {
-        const response = await fetchApi<{ genres: string[] }>("/anime/genres");
-        return response;
-    },
-
-    // ============ Vector Search ============
-    vectorSearch: async (query: string, limit = 10) => {
+    // Vector search using FAISS
+    vectorSearch: async (query: string, limit = 20) => {
         const response = await fetchApi<{
-            animes: Anime[];
+            animes: (Anime & { similarity_score: number; distance: number })[];
             count: number;
             query: string;
         }>("/search/vector", {
@@ -115,12 +105,42 @@ export const api = {
         return response;
     },
 
-    getSimilarAnimeVector: async (animeId: number, limit = 10) => {
+    // Find similar anime using vector embeddings
+    findSimilarAnime: async (animeId: number, limit = 10) => {
         const response = await fetchApi<{
-            anime: Anime;
-            similar: Anime[];
+            base_anime: Anime;
+            similar_animes: (Anime & { similarity_score: number; distance: number })[];
             count: number;
         }>(`/search/similar/${animeId}?limit=${limit}`);
+        return response;
+    },
+
+    // Check vector search service status
+    getSearchStatus: async () => {
+        const response = await fetchApi<{
+            status: string;
+            index_stats: {
+                status: string;
+                total_vectors: number;
+                embedding_dim: number;
+                is_trained: boolean;
+                total_anime: number;
+            };
+            model_info: {
+                model_name: string;
+                embedding_dim: number;
+            };
+        }>("/search/status");
+        return response;
+    },
+
+    getTopAnimes: async (limit = 10) => {
+        const response = await fetchApi<{ animes: Anime[] }>(`/anime/top?limit=${limit}`);
+        return response;
+    },
+
+    getGenres: async () => {
+        const response = await fetchApi<{ genres: string[] }>("/anime/genres");
         return response;
     },
 

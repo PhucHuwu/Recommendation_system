@@ -1,20 +1,19 @@
 """
-FAISS Service
+FAISS Service for Vector Similarity Search
 
-Manage FAISS index for vector similarity search on anime embeddings.
-Supports building index, searching for similar anime, and save/load functionality.
+This service manages FAISS index for fast similarity search
+across anime embeddings.
 """
 
-import os
-import numpy as np
 import faiss
-from typing import List, Tuple, Optional, Dict
+import numpy as np
+from typing import List, Tuple, Optional
 import pickle
-from pathlib import Path
+import os
 
 
 class FAISSService:
-    """Service for managing FAISS vector search index"""
+    """Service to build and query FAISS index for anime search"""
     
     def __init__(self, embedding_dim: int = 384):
         """
@@ -24,189 +23,180 @@ class FAISSService:
             embedding_dim: Dimension of embedding vectors
         """
         self.embedding_dim = embedding_dim
-        self.index: Optional[faiss.Index] = None
-        self.anime_ids: List[int] = []
-        self.id_to_idx: Dict[int, int] = {}  # Map anime_id to index position
+        self.index = None
+        self.anime_ids = None
+        self.is_trained = False
         
-    def build_index(self, embeddings: np.ndarray, anime_ids: List[int],
-                   index_type: str = 'flat'):
+    def build_index(self, embeddings: np.ndarray, anime_ids: List[int], 
+                    index_type: str = 'flat'):
         """
         Build FAISS index from embeddings
         
         Args:
-            embeddings: Numpy array of shape (n_samples, embedding_dim)
+            embeddings: 2D numpy array of shape (n_animes, embedding_dim)
             anime_ids: List of anime IDs corresponding to embeddings
             index_type: Type of FAISS index ('flat' or 'ivf')
         """
-        if len(embeddings) != len(anime_ids):
-            raise ValueError(f"Embeddings and anime_ids length mismatch: "
-                           f"{len(embeddings)} vs {len(anime_ids)}")
+        n_vectors = embeddings.shape[0]
         
-        print(f"Building FAISS index with {len(embeddings)} vectors...")
+        if embeddings.shape[1] != self.embedding_dim:
+            raise ValueError(f"Embedding dimension mismatch: expected {self.embedding_dim}, "
+                           f"got {embeddings.shape[1]}")
         
-        # Ensure embeddings are float32 (required by FAISS)
-        embeddings = embeddings.astype('float32')
+        print(f"Building FAISS index for {n_vectors} vectors...")
         
         if index_type == 'flat':
-            # IndexFlatL2 - exact search using L2 distance
+            # IndexFlatL2: Exact search using L2 distance
+            # Best for smaller datasets (< 1M vectors)
             self.index = faiss.IndexFlatL2(self.embedding_dim)
+            
         elif index_type == 'ivf':
-            # IndexIVFFlat - faster approximate search
-            # Use sqrt(n) clusters as a rule of thumb
-            n_clusters = min(int(np.sqrt(len(embeddings))), 100)
+            # IndexIVFFlat: Faster approximate search
+            # Good for larger datasets
+            n_list = min(100, n_vectors // 10)  # Number of clusters
             quantizer = faiss.IndexFlatL2(self.embedding_dim)
-            self.index = faiss.IndexIVFFlat(quantizer, self.embedding_dim, n_clusters)
-            # Train the index
-            print(f"Training IVF index with {n_clusters} clusters...")
+            self.index = faiss.IndexIVFFlat(quantizer, self.embedding_dim, n_list)
+            
+            # IVF index needs training
+            print(f"Training IVF index with {n_list} clusters...")
             self.index.train(embeddings)
+            self.is_trained = True
         else:
             raise ValueError(f"Unknown index type: {index_type}")
         
         # Add vectors to index
         self.index.add(embeddings)
-        
-        # Store anime IDs mapping
         self.anime_ids = anime_ids
-        self.id_to_idx = {anime_id: idx for idx, anime_id in enumerate(anime_ids)}
         
-        print(f"Index built successfully:")
+        print(f"Index built successfully")
         print(f"  - Index type: {index_type}")
         print(f"  - Total vectors: {self.index.ntotal}")
-        print(f"  - Dimension: {self.embedding_dim}")
+        print(f"  - Is trained: {self.is_trained}")
     
-    def search(self, query_vector: np.ndarray, k: int = 10) -> List[Tuple[int, float]]:
+    def search(self, query_embedding: np.ndarray, k: int = 10) -> Tuple[List[int], List[float]]:
         """
         Search for k most similar anime
         
         Args:
-            query_vector: Query embedding vector
+            query_embedding: Query vector of shape (embedding_dim,) or (1, embedding_dim)
             k: Number of results to return
             
         Returns:
-            List of (anime_id, distance) tuples, sorted by similarity
+            Tuple of (anime_ids, distances)
         """
         if self.index is None:
-            raise RuntimeError("Index not built yet. Call build_index() first.")
+            raise ValueError("Index not built yet. Call build_index() first.")
         
-        # Ensure query is 2D array with float32
-        query_vector = np.array(query_vector, dtype='float32')
-        if query_vector.ndim == 1:
-            query_vector = query_vector.reshape(1, -1)
+        # Ensure query is 2D
+        if query_embedding.ndim == 1:
+            query_embedding = query_embedding.reshape(1, -1)
+        
+        # Ensure float32 type
+        query_embedding = query_embedding.astype(np.float32)
         
         # Search
-        distances, indices = self.index.search(query_vector, k)
+        k = min(k, self.index.ntotal)  # Can't return more than total vectors
+        distances, indices = self.index.search(query_embedding, k)
         
-        # Convert to (anime_id, distance) tuples
-        results = []
-        for idx, dist in zip(indices[0], distances[0]):
-            if idx < len(self.anime_ids):  # Valid index
-                anime_id = self.anime_ids[idx]
-                # Convert L2 distance to similarity score (lower is better)
-                # We'll use negative distance so higher score = more similar
-                similarity = float(-dist)
-                results.append((anime_id, similarity))
+        # Convert to lists
+        distances = distances[0].tolist()
+        indices = indices[0].tolist()
         
-        return results
+        # Map indices to anime IDs
+        result_anime_ids = [self.anime_ids[idx] for idx in indices if idx != -1]
+        result_distances = [dist for idx, dist in zip(indices, distances) if idx != -1]
+        
+        return result_anime_ids, result_distances
     
-    def search_by_id(self, anime_id: int, k: int = 10, 
-                    exclude_self: bool = True) -> List[Tuple[int, float]]:
+    def search_batch(self, query_embeddings: np.ndarray, k: int = 10) -> Tuple[List[List[int]], List[List[float]]]:
         """
-        Find similar anime to a given anime
+        Search for multiple queries at once
         
         Args:
-            anime_id: ID of the anime to find similar ones for
-            k: Number of results to return
-            exclude_self: Whether to exclude the query anime from results
+            query_embeddings: 2D array of query vectors (n_queries, embedding_dim)
+            k: Number of results per query
             
         Returns:
-            List of (anime_id, similarity) tuples
+            Tuple of (list of anime_ids lists, list of distances lists)
         """
-        if anime_id not in self.id_to_idx:
-            raise ValueError(f"Anime ID {anime_id} not found in index")
+        if self.index is None:
+            raise ValueError("Index not built yet. Call build_index() first.")
         
-        # Get the embedding vector for this anime
-        idx = self.id_to_idx[anime_id]
+        # Ensure float32 type
+        query_embeddings = query_embeddings.astype(np.float32)
         
-        # Reconstruct the vector from index
-        # For IndexFlatL2, we can access vectors directly
-        if isinstance(self.index, faiss.IndexFlatL2):
-            vector = faiss.rev_swig_ptr(self.index.get_xb(), self.index.ntotal * self.embedding_dim)
-            vector = np.array(vector).reshape(self.index.ntotal, self.embedding_dim)
-            query_vector = vector[idx:idx+1]
-        else:
-            raise NotImplementedError("Getting vector from this index type not supported")
+        # Search
+        k = min(k, self.index.ntotal)
+        distances, indices = self.index.search(query_embeddings, k)
         
-        # Search for similar, getting k+1 to account for self
-        results = self.search(query_vector, k=k+1 if exclude_self else k)
+        # Convert to lists of lists
+        result_anime_ids = []
+        result_distances = []
         
-        # Remove self if requested
-        if exclude_self:
-            results = [(aid, sim) for aid, sim in results if aid != anime_id][:k]
+        for i in range(len(query_embeddings)):
+            anime_ids = [self.anime_ids[idx] for idx in indices[i] if idx != -1]
+            dists = [dist for idx, dist in zip(indices[i], distances[i]) if idx != -1]
+            result_anime_ids.append(anime_ids)
+            result_distances.append(dists)
         
-        return results
+        return result_anime_ids, result_distances
     
     def save(self, filepath: str):
         """
-        Save FAISS index and metadata to file
+        Save FAISS index to file
         
         Args:
             filepath: Path to save index
         """
         if self.index is None:
-            raise RuntimeError("No index to save")
+            raise ValueError("No index to save")
         
-        Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
         
-        # Save FAISS index
-        index_path = filepath
-        faiss.write_index(self.index, index_path)
+        # Save index
+        faiss.write_index(self.index, filepath)
         
         # Save metadata
-        meta_path = filepath + '.meta'
+        metadata_path = filepath + '.meta'
         metadata = {
             'anime_ids': self.anime_ids,
-            'id_to_idx': self.id_to_idx,
-            'embedding_dim': self.embedding_dim
+            'embedding_dim': self.embedding_dim,
+            'is_trained': self.is_trained,
+            'ntotal': self.index.ntotal
         }
         
-        with open(meta_path, 'wb') as f:
+        with open(metadata_path, 'wb') as f:
             pickle.dump(metadata, f)
         
         print(f"Saved FAISS index to {filepath}")
-        print(f"  - Index size: {os.path.getsize(index_path) / 1024 / 1024:.2f} MB")
-        print(f"  - Metadata size: {os.path.getsize(meta_path) / 1024:.2f} KB")
+        print(f"  - Total vectors: {self.index.ntotal}")
     
     def load(self, filepath: str):
         """
-        Load FAISS index and metadata from file
+        Load FAISS index from file
         
         Args:
             filepath: Path to index file
         """
-        # Load FAISS index
+        # Load index
         self.index = faiss.read_index(filepath)
         
         # Load metadata
-        meta_path = filepath + '.meta'
-        with open(meta_path, 'rb') as f:
+        metadata_path = filepath + '.meta'
+        with open(metadata_path, 'rb') as f:
             metadata = pickle.load(f)
         
         self.anime_ids = metadata['anime_ids']
-        self.id_to_idx = metadata['id_to_idx']
         self.embedding_dim = metadata['embedding_dim']
+        self.is_trained = metadata.get('is_trained', False)
         
         print(f"Loaded FAISS index from {filepath}")
         print(f"  - Total vectors: {self.index.ntotal}")
-        print(f"  - Dimension: {self.embedding_dim}")
-        print(f"  - Anime count: {len(self.anime_ids)}")
+        print(f"  - Embedding dim: {self.embedding_dim}")
+        print(f"  - Is trained: {self.is_trained}")
     
-    def get_stats(self) -> Dict:
-        """
-        Get index statistics
-        
-        Returns:
-            Dictionary with index statistics
-        """
+    def get_stats(self) -> dict:
+        """Get statistics about the index"""
         if self.index is None:
             return {'status': 'not_built'}
         
@@ -214,28 +204,6 @@ class FAISSService:
             'status': 'ready',
             'total_vectors': self.index.ntotal,
             'embedding_dim': self.embedding_dim,
-            'anime_count': len(self.anime_ids),
-            'index_type': type(self.index).__name__
+            'is_trained': self.is_trained,
+            'total_anime': len(self.anime_ids) if self.anime_ids else 0
         }
-
-
-# Singleton instance
-_faiss_service_instance: Optional[FAISSService] = None
-
-
-def get_faiss_service(embedding_dim: int = 384) -> FAISSService:
-    """
-    Get or create singleton FAISS service instance
-    
-    Args:
-        embedding_dim: Embedding dimension
-        
-    Returns:
-        FAISSService instance
-    """
-    global _faiss_service_instance
-    
-    if _faiss_service_instance is None:
-        _faiss_service_instance = FAISSService(embedding_dim=embedding_dim)
-    
-    return _faiss_service_instance
