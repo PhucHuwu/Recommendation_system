@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Search, Filter, X, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { api } from "@/lib/api";
@@ -32,6 +34,7 @@ export default function AnimePage() {
     const [currentPage, setCurrentPage] = useState(Number(searchParams.get("page")) || 1);
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
+    const [useVectorSearch, setUseVectorSearch] = useState(true); // Default to AI search
 
     const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -72,11 +75,19 @@ export default function AnimePage() {
             setLoading(true);
             try {
                 if (debouncedSearch) {
-                    // Use search API
-                    const response = await api.searchAnime(debouncedSearch, ITEMS_PER_PAGE);
-                    setAnimes(response.animes || []);
-                    setTotal(response.count || 0);
-                    setTotalPages(1); // Search doesn't use pagination
+                    if (useVectorSearch) {
+                        // Use vector search API
+                        const response = await api.vectorSearch(debouncedSearch, ITEMS_PER_PAGE);
+                        setAnimes(response.animes || []);
+                        setTotal(response.count || 0);
+                        setTotalPages(1); // Search doesn't use pagination
+                    } else {
+                        // Use traditional text search API
+                        const response = await api.searchAnime(debouncedSearch, ITEMS_PER_PAGE);
+                        setAnimes(response.animes || []);
+                        setTotal(response.count || 0);
+                        setTotalPages(1); // Search doesn't use pagination
+                    }
                 } else {
                     // Use regular anime list API
                     const response = await api.getAnimes({
@@ -99,7 +110,7 @@ export default function AnimePage() {
         };
 
         fetchAnimes();
-    }, [debouncedSearch, selectedGenre, sortBy, currentPage]);
+    }, [debouncedSearch, selectedGenre, sortBy, currentPage, useVectorSearch]);
 
     // Update URL params
     useEffect(() => {
@@ -143,13 +154,24 @@ export default function AnimePage() {
 
             {/* Filters */}
             <div className="flex flex-col gap-4 mb-8">
+                {/* Vector Search Toggle - Compact */}
+                {searchQuery && (
+                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card/50">
+                        <Sparkles className={`h-4 w-4 ${useVectorSearch ? "text-primary" : "text-muted-foreground"}`} />
+                        <Label htmlFor="anime-vector-search" className="cursor-pointer text-sm flex-1">
+                            Tìm kiếm thông minh (AI)
+                        </Label>
+                        <Switch id="anime-vector-search" checked={useVectorSearch} onCheckedChange={setUseVectorSearch} />
+                    </div>
+                )}
+
                 <div className="flex flex-col sm:flex-row gap-4">
                     {/* Search */}
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             type="search"
-                            placeholder="Tìm kiếm anime..."
+                            placeholder={useVectorSearch && searchQuery ? "Tìm kiếm với AI (VD: anime hành động với phép thuật)..." : "Tìm kiếm anime..."}
                             value={searchQuery}
                             onChange={(e) => {
                                 setSearchQuery(e.target.value);
