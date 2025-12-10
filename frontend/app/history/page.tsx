@@ -16,7 +16,13 @@ import { api } from "@/lib/api";
 import type { UserHistory } from "@/types/user";
 
 function formatDate(dateString: string) {
+    if (!dateString) return "N/A";
+
     const date = new Date(dateString);
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) return "N/A";
+
     return new Intl.DateTimeFormat("vi-VN", {
         day: "2-digit",
         month: "2-digit",

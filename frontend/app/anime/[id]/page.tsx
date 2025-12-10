@@ -9,9 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RatingStars } from "@/components/anime/rating-stars";
 import { PageLoading } from "@/components/ui/loading";
-import { Play, Plus, Star, Users, Clock, ArrowLeft, Tv, Video, Film } from "lucide-react";
+import { Star, Users, Clock, ArrowLeft, Tv, Video, Film } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import type { Anime } from "@/types/anime";
 
 function getTypeIcon(type?: string) {
@@ -41,6 +42,7 @@ function getGradientClass(name: string) {
 export default function AnimeDetailPage() {
     const params = useParams();
     const { user, token, isAuthenticated } = useAuth();
+    const { toast } = useToast();
     const [anime, setAnime] = useState<(Anime & { synopsis?: string; user_avg_rating?: number }) | null>(null);
     const [similarAnimes, setSimilarAnimes] = useState<any[]>([]);
     const [userRating, setUserRating] = useState<number>(0);
@@ -102,21 +104,20 @@ export default function AnimeDetailPage() {
             }
 
             setUserRating(rating);
+
+            toast({
+                title: "Đánh giá thành công!",
+                description: `Bạn đã đánh giá ${rating}/10 cho anime này.`,
+            });
         } catch (error) {
             console.error("Failed to save rating:", error);
+            toast({
+                title: "Lỗi",
+                description: "Không thể lưu đánh giá. Vui lòng thử lại.",
+                variant: "destructive",
+            });
         } finally {
             setRatingLoading(false);
-        }
-    };
-
-    const handleAddToHistory = async () => {
-        if (!isAuthenticated || !token) return;
-
-        try {
-            const animeId = Number(params.id);
-            await api.addToHistory(token, animeId);
-        } catch (error) {
-            console.error("Failed to add to history:", error);
         }
     };
 
@@ -176,16 +177,6 @@ export default function AnimeDetailPage() {
                                             {anime.type && <Badge variant="secondary">{anime.type}</Badge>}
                                         </div>
                                     </div>
-                                )}
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex flex-col gap-2 mt-4">
-                                {isAuthenticated && (
-                                    <Button variant="outline" className="w-full bg-transparent" onClick={handleAddToHistory}>
-                                        <Plus className="h-5 w-5 mr-2" />
-                                        Thêm vào lịch sử
-                                    </Button>
                                 )}
                             </div>
                         </div>

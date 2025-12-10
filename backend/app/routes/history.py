@@ -6,9 +6,11 @@ from datetime import datetime
 history_bp = Blueprint('history', __name__)
 
 
-def _get_history_data(target_user_id: int, page: int = 1, limit: int = 20):
+def _get_history_from_ratings(target_user_id: int, page: int = 1, limit: int = 20):
     """
-    Helper function to fetch history data for a user
+    Helper function to get watch history from ratings collection
+    
+    Logic: If user rated an anime, they watched it
     
     Args:
         target_user_id: User ID to fetch history for
@@ -23,13 +25,14 @@ def _get_history_data(target_user_id: int, page: int = 1, limit: int = 20):
     
     db = get_db()
     
-    # Get total count
-    total = db.watch_history.count_documents({'user_id': target_user_id})
+    # Get total count from ratings (rated = watched)
+    total = db.ratings.count_documents({'user_id': target_user_id})
     
-    # Get history with anime info
+    # Get ratings as watch history (with anime info)
     pipeline = [
         {'$match': {'user_id': target_user_id}},
-        {'$sort': {'watched_at': -1}},
+        # Sort by updated_at (most recent rating = most recent watch)
+        {'$sort': {'updated_at': -1}},
         {'$skip': skip},
         {'$limit': limit},
         {'$lookup': {
@@ -42,14 +45,15 @@ def _get_history_data(target_user_id: int, page: int = 1, limit: int = 20):
         {'$project': {
             '_id': 0,
             'anime_id': 1,
-            'watched_at': 1,
+            # Use updated_at as watched_at, fallback to created_at if updated_at is null
+            'watched_at': {'$ifNull': ['$updated_at', '$created_at']},
             'anime_name': '$anime.name',
             'anime_genres': '$anime.genres',
             'anime_score': '$anime.score'
         }}
     ]
     
-    history = list(db.watch_history.aggregate(pipeline))
+    history = list(db.ratings.aggregate(pipeline))
     
     return {
         'history': history,
@@ -63,83 +67,58 @@ def _get_history_data(target_user_id: int, page: int = 1, limit: int = 20):
 @history_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_my_history():
-    """Get current user's watch history"""
+    """Get current user's watch history (from ratings)"""
     user_id = int(get_jwt_identity())
     
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 20, type=int)
     
-    data = _get_history_data(user_id, page, limit)
+    data = _get_history_from_ratings(user_id, page, limit)
     return jsonify(data), 200
 
 
 @history_bp.route('/user/<int:target_user_id>', methods=['GET'])
 def get_user_history(target_user_id):
-    """Get watch history for a specific user (PUBLIC - no auth required)"""
+    """Get watch history for a specific user (PUBLIC - from ratings)"""
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 20, type=int)
     
-    data = _get_history_data(target_user_id, page, limit)
+    data = _get_history_from_ratings(target_user_id, page, limit)
     return jsonify(data), 200
 
 
 @history_bp.route('/', methods=['POST'])
 @jwt_required()
 def add_to_history():
-    """Add anime to watch history"""
-    user_id = int(get_jwt_identity())
-    data = request.get_json()
-    
-    if not data or 'anime_id' not in data:
-        return jsonify({'error': 'anime_id is required'}), 400
-    
-    try:
-        anime_id = int(data['anime_id'])
-    except ValueError:
-        return jsonify({'error': 'anime_id must be a number'}), 400
-    
-    db = get_db()
-    
-    # Check if anime exists
-    anime = db.animes.find_one({'mal_id': anime_id})
-    if not anime:
-        return jsonify({'error': 'Anime not found'}), 404
-    
-    # Add to history (allow duplicates for tracking multiple watches)
-    new_entry = {
-        'user_id': user_id,
-        'anime_id': anime_id,
-        'watched_at': datetime.utcnow()
-    }
-    
-    db.watch_history.insert_one(new_entry)
-    
+    """
+    Add to history is now deprecated - use ratings instead
+    This endpoint is kept for backward compatibility but does nothing
+    """
     return jsonify({
-        'message': 'Added to watch history',
-        'history': {
-            'user_id': user_id,
-            'anime_id': anime_id,
-            'anime_name': anime.get('name')
-        }
-    }), 201
+        'message': 'Use ratings to track watch history',
+        'deprecated': True
+    }), 200
 
 
 @history_bp.route('/<int:anime_id>', methods=['DELETE'])
 @jwt_required()
 def remove_from_history(anime_id):
-    """Remove anime from watch history"""
+    """
+    Remove from history is now deprecated - delete rating instead
+    This endpoint is kept for backward compatibility
+    """
     user_id = int(get_jwt_identity())
     db = get_db()
     
-    # Remove all entries for this anime (or just the latest one)
-    result = db.watch_history.delete_many({
+    # Delete rating (which is the watch history)
+    result = db.ratings.delete_one({
         'user_id': user_id,
         'anime_id': anime_id
     })
     
     if result.deleted_count == 0:
-        return jsonify({'error': 'History entry not found'}), 404
+        return jsonify({'error': 'No rating found for this anime'}), 404
     
     return jsonify({
-        'message': f'Removed {result.deleted_count} entries from history'
+        'message': f'Rating/history deleted successfully'
     }), 200
