@@ -9,11 +9,16 @@ Trains User-Based CF, Item-Based CF, and Hybrid models with:
 
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+# Add backend directory to Python path
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
 
 from ml.models.user_based import UserBasedCF
 from ml.models.item_based import ItemBasedCF
 from ml.models.hybrid import HybridWeightedCF
+from ml.models.neural_cf import NeuralCF
 from ml.training.evaluate import evaluate_model, compare_models
 from pymongo import MongoClient
 import os
@@ -167,7 +172,7 @@ def optimize_hybrid_weights(user_model: UserBasedCF, item_model: ItemBasedCF,
                 best_rmse = rmse
                 best_alpha = alpha
     
-    print(f"\n✅ Best weight: α={best_alpha:.1f} (RMSE={best_rmse:.4f})")
+    print(f"\nBest weight: α={best_alpha:.1f} (RMSE={best_rmse:.4f})")
     
     return best_alpha
 
@@ -197,6 +202,91 @@ def update_model_registry(model_name: str, metrics: Optional[Dict[str, float]] =
         {'$set': update_data},
         upsert=True
     )
+
+
+def train_neural_cf(train_data: List[dict], test_data: List[dict]) -> Tuple[NeuralCF, Dict[str, float]]:
+    """
+    Train Neural Collaborative Filtering model
+    
+    Args:
+        train_data: Training ratings
+        test_data: Test ratings for validation
+        
+    Returns:
+        (trained_model, metrics)
+    """
+    print("\nPreparing NCF training data...")
+    
+    # Get unique user and item IDs
+    all_data = train_data + test_data
+    user_ids = set(r['user_id'] for r in all_data)
+    item_ids = set(r['anime_id'] for r in all_data)
+    
+    # Create user/item ID mappings (NCF expects continuous IDs from 0)
+    user_id_map = {uid: idx for idx, uid in enumerate(sorted(user_ids))}
+    item_id_map = {iid: idx for idx, iid in enumerate(sorted(item_ids))}
+    
+    # Map IDs in data
+    mapped_train = []
+    for r in train_data:
+        if r['user_id'] in user_id_map and r['anime_id'] in item_id_map:
+            mapped_train.append({
+                'user_id': user_id_map[r['user_id']],
+                'anime_id': item_id_map[r['anime_id']],
+                'rating': r['rating']
+            })
+    
+    mapped_test = []
+    for r in test_data:
+        if r['user_id'] in user_id_map and r['anime_id'] in item_id_map:
+            mapped_test.append({
+                'user_id': user_id_map[r['user_id']],
+                'anime_id': item_id_map[r['anime_id']],
+                'rating': r['rating']
+            })
+    
+    print(f"  Mapped {len(mapped_train):,} train ratings")
+    print(f"  Mapped {len(mapped_test):,} test ratings")
+    print(f"  Users: {len(user_id_map):,}")
+    print(f"  Items: {len(item_id_map):,}")
+    
+    # Initialize model
+    print("\nInitializing Neural CF model...")
+    model = NeuralCF(
+        num_users=len(user_id_map),
+        num_items=len(item_id_map),
+        embedding_dim=64,
+        mlp_layers=[128, 64, 32],
+        dropout=0.2
+    )
+    
+    # Train
+    print("\nTraining Neural CF...")
+    import torch
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(f"  Device: {device}")
+    
+    model.fit(
+        train_data=mapped_train,
+        val_data=mapped_test,
+        epochs=30,
+        batch_size=256,
+        lr=0.001,
+        early_stopping=5,
+        device=device
+    )
+    
+    # Save ID mappings with model
+    model.user_id_map = user_id_map
+    model.item_id_map = item_id_map
+    model.reverse_user_map = {v: k for k, v in user_id_map.items()}
+    model.reverse_item_map = {v: k for k, v in item_id_map.items()}
+    
+    # Evaluate
+    print("\nEvaluating Neural CF...")
+    metrics = evaluate_model(model, train_data, test_data, k=10)
+    
+    return model, metrics
 
 
 def main():
@@ -265,7 +355,27 @@ def main():
     hybrid_model.save(os.path.join(models_dir,'hybrid.pkl'))
     
     # Activate hybrid model (best combined model)
-    update_model_registry('hybrid', hybrid_metrics, is_active=True)
+    update_model_registry('hybrid', hybrid_metrics, is_active=False)  # Will compare with NCF first
+    
+    # ===== NEURAL CF MODEL =====
+    print(f"\n{'='*80}")
+    print("PHASE 4: NEURAL COLLABORATIVE FILTERING")
+    print(f"{'='*80}")
+    
+    ncf_model, ncf_metrics = train_neural_cf(train_data, test_data)
+    
+    # Save NCF model
+    ncf_model.save(os.path.join(models_dir, 'neural_cf.pt'))
+    
+    # Activate NCF if it's better than Hybrid
+    is_active = ncf_metrics.get('rmse', float('inf')) < hybrid_metrics.get('rmse', float('inf'))
+    update_model_registry('neural_cf', ncf_metrics, is_active=is_active)
+    
+    if is_active:
+        print("\n[OK] NCF is the best model! Activated.")
+    else:
+        print("\n[OK] Hybrid remains the best model.")
+        update_model_registry('hybrid', hybrid_metrics, is_active=True)
     
     # ===== COMPARISON =====
     print(f"\n{'='*80}")
@@ -275,7 +385,8 @@ def main():
     compare_models({
         'User-Based CF': user_metrics,
         'Item-Based CF': item_metrics,
-        'Hybrid': hybrid_metrics
+        'Hybrid': hybrid_metrics,
+        'Neural CF': ncf_metrics
     })
     
     print("\nTraining complete! Models saved to ml/saved_models/")
