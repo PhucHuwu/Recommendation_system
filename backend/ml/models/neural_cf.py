@@ -359,8 +359,18 @@ class NeuralCF(nn.Module):
             'model_class': 'NeuralCF'
         }
         
+        # Save ID mappings if they exist (CRITICAL for personalization!)
+        if hasattr(self, 'user_id_map'):
+            model_state['user_id_map'] = self.user_id_map
+        if hasattr(self, 'item_id_map'):
+            model_state['item_id_map'] = self.item_id_map
+        
         torch.save(model_state, filepath)
         print(f"Model saved to {filepath}")
+        if hasattr(self, 'user_id_map'):
+            print(f"  - Saved {len(self.user_id_map)} user mappings")
+        if hasattr(self, 'item_id_map'):
+            print(f"  - Saved {len(self.item_id_map)} item mappings")
     
     @classmethod
     def load(cls, filepath: str, device: str = 'cpu'):
@@ -379,6 +389,14 @@ class NeuralCF(nn.Module):
         model.load_state_dict(model_state['state_dict'])
         model.to(device)
         model.eval()
+        
+        # Restore ID mappings (CRITICAL for personalization!)
+        if 'user_id_map' in model_state:
+            model.user_id_map = model_state['user_id_map']
+            print(f"  - Restored {len(model.user_id_map)} user mappings")
+        if 'item_id_map' in model_state:
+            model.item_id_map = model_state['item_id_map']
+            print(f"  - Restored {len(model.item_id_map)} item mappings")
         
         print(f"Model loaded from {filepath}")
         return model

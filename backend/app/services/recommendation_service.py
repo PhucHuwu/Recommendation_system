@@ -36,12 +36,16 @@ class RecommendationService:
         Load a specific model
         
         Args:
-            model_name: Name of model (user_based_cf, item_based_cf, hybrid)
+            model_name: Name of model (user_based_cf, item_based_cf, hybrid, neural_cf)
             
         Returns:
             True if loaded successfully
         """
-        model_path = os.path.join(self.models_dir, f'{model_name}.pkl')
+        # Neural CF uses .pt extension, others use .pkl
+        if model_name == 'neural_cf':
+            model_path = os.path.join(self.models_dir, f'{model_name}.pt')
+        else:
+            model_path = os.path.join(self.models_dir, f'{model_name}.pkl')
         
         if not os.path.exists(model_path):
             print(f"Model file not found: {model_path}")
@@ -69,12 +73,8 @@ class RecommendationService:
                     print("Cannot load hybrid: base models not available")
                     return False
             elif model_name == 'neural_cf':
-                # Neural CF uses .pt extension
-                ncf_path = os.path.join(self.models_dir, f'{model_name}.pt')
-                if not os.path.exists(ncf_path):
-                    print(f"Neural CF model file not found: {ncf_path}")
-                    return False
-                self.models[model_name] = NeuralCF.load(ncf_path)
+                # Neural CF already has correct path (.pt)
+                self.models[model_name] = NeuralCF.load(model_path)
             else:
                 print(f"Unknown model name: {model_name}")
                 return False
