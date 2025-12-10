@@ -173,7 +173,7 @@ export default function HistoryPage() {
         setSearchLoading(true);
 
         const userId = Number.parseInt(otherUserId, 10);
-        if (isNaN(userId) || userId <= 0) {
+        if (isNaN(userId) || userId < 0) {
             setSearchError("User ID không hợp lệ");
             setSearchLoading(false);
             return;
@@ -269,7 +269,7 @@ export default function HistoryPage() {
                                             setSearchError("");
                                         }}
                                         className="pl-10"
-                                        min="1"
+                                        min="0"
                                     />
                                 </div>
                                 <Button onClick={handleSearchUser} disabled={searchLoading}>

@@ -6,20 +6,18 @@ from datetime import datetime
 history_bp = Blueprint('history', __name__)
 
 
-@history_bp.route('/', methods=['GET'])
-@jwt_required()
-def get_my_history():
-    """Get current user's watch history"""
-    user_id = int(get_jwt_identity())
-    return get_user_history(user_id)
-
-
-@history_bp.route('/user/<int:target_user_id>', methods=['GET'])
-def get_user_history(target_user_id):
-    """Get watch history for a specific user"""
-    page = request.args.get('page', 1, type=int)
-    limit = request.args.get('limit', 20, type=int)
+def _get_history_data(target_user_id: int, page: int = 1, limit: int = 20):
+    """
+    Helper function to fetch history data for a user
     
+    Args:
+        target_user_id: User ID to fetch history for
+        page: Page number
+        limit: Items per page
+        
+    Returns:
+        dict with history, total, page, limit, user_id
+    """
     limit = min(limit, 100)
     skip = (page - 1) * limit
     
@@ -53,13 +51,36 @@ def get_user_history(target_user_id):
     
     history = list(db.watch_history.aggregate(pipeline))
     
-    return jsonify({
+    return {
         'history': history,
         'total': total,
         'page': page,
         'limit': limit,
         'user_id': target_user_id
-    }), 200
+    }
+
+
+@history_bp.route('/', methods=['GET'])
+@jwt_required()
+def get_my_history():
+    """Get current user's watch history"""
+    user_id = int(get_jwt_identity())
+    
+    page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', 20, type=int)
+    
+    data = _get_history_data(user_id, page, limit)
+    return jsonify(data), 200
+
+
+@history_bp.route('/user/<int:target_user_id>', methods=['GET'])
+def get_user_history(target_user_id):
+    """Get watch history for a specific user (PUBLIC - no auth required)"""
+    page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', 20, type=int)
+    
+    data = _get_history_data(target_user_id, page, limit)
+    return jsonify(data), 200
 
 
 @history_bp.route('/', methods=['POST'])
