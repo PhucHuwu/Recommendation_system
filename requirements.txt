@@ -29,3 +29,8 @@ kagglehub==0.2.5
 # Utils
 tqdm==4.66.1
 python-dateutil==2.8.2
+
+# Vector Search
+faiss-cpu==1.7.4
+sentence-transformers==2.7.0
+torch>=2.1.0

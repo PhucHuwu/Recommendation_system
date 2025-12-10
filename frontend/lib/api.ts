@@ -102,6 +102,28 @@ export const api = {
         return response;
     },
 
+    // ============ Vector Search ============
+    vectorSearch: async (query: string, limit = 10) => {
+        const response = await fetchApi<{
+            animes: Anime[];
+            count: number;
+            query: string;
+        }>("/search/vector", {
+            method: "POST",
+            body: JSON.stringify({ query, limit }),
+        });
+        return response;
+    },
+
+    getSimilarAnimeVector: async (animeId: number, limit = 10) => {
+        const response = await fetchApi<{
+            anime: Anime;
+            similar: Anime[];
+            count: number;
+        }>(`/search/similar/${animeId}?limit=${limit}`);
+        return response;
+    },
+
     // ============ Recommendations ============
     getRecommendations: async (token: string, limit = 10, model?: string) => {
         const params = new URLSearchParams({ limit: limit.toString() });

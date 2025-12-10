@@ -7,6 +7,7 @@ from app.routes.rating import rating_bp
 from app.routes.recommendation import recommendation_bp
 from app.routes.history import history_bp
 from app.routes.admin import admin_bp
+from app.routes.search import search_bp
 
 
 def register_blueprints(app):
@@ -19,3 +20,4 @@ def register_blueprints(app):
     app.register_blueprint(recommendation_bp, url_prefix=f'{api_prefix}/recommendation')
     app.register_blueprint(history_bp, url_prefix=f'{api_prefix}/history')
     app.register_blueprint(admin_bp, url_prefix=f'{api_prefix}/admin')
+    app.register_blueprint(search_bp, url_prefix=f'{api_prefix}/search')

@@ -17,6 +17,12 @@ class Config:
     
     # API
     API_PREFIX = os.getenv('API_PREFIX', '/api')
+    
+    # FAISS Vector Search
+    FAISS_INDEX_PATH = os.getenv('FAISS_INDEX_PATH', 'ml/saved_models/faiss_index.bin')
+    EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'sentence-transformers/all-MiniLM-L6-v2')
+    EMBEDDING_DIM = 384  # Dimension for all-MiniLM-L6-v2
+    EMBEDDINGS_PATH = os.getenv('EMBEDDINGS_PATH', 'ml/saved_models/anime_embeddings.pkl')
 
 
 class DevelopmentConfig(Config):
