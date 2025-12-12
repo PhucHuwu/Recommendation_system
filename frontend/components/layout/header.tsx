@@ -3,6 +3,8 @@
 import type React from "react";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +17,13 @@ export function Header() {
     const { user, isAuthenticated, logout } = useAuth();
     const [searchQuery, setSearchQuery] = useState("");
     const router = useRouter();
+    const pathname = usePathname();
+
+    const isActive = (href: string) => {
+        if (!pathname) return false;
+        if (href === "/") return pathname === "/";
+        return pathname.startsWith(href);
+    };
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -34,23 +43,61 @@ export function Header() {
 
                 {/* Navigation */}
                 <nav className="hidden md:flex items-center gap-6">
-                    <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    <Link
+                        href="/"
+                        className={cn(
+                            "text-sm font-medium transition-colors",
+                            isActive("/") ? "underline underline-offset-4 decoration-primary text-foreground" : "text-muted-foreground hover:text-foreground"
+                        )}
+                    >
                         Trang chủ
                     </Link>
-                    <Link href="/anime" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    <Link
+                        href="/anime"
+                        className={cn(
+                            "text-sm font-medium transition-colors",
+                            isActive("/anime")
+                                ? "underline underline-offset-4 decoration-primary text-foreground"
+                                : "text-muted-foreground hover:text-foreground"
+                        )}
+                    >
                         Anime
                     </Link>
                     {isAuthenticated && (
-                        <Link href="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        <Link
+                            href="/admin"
+                            className={cn(
+                                "text-sm font-medium transition-colors",
+                                isActive("/admin")
+                                    ? "underline underline-offset-4 decoration-primary text-foreground"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
                             Admin
                         </Link>
                     )}
                     {isAuthenticated && (
                         <>
-                            <Link href="/history" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                            <Link
+                                href="/history"
+                                className={cn(
+                                    "text-sm font-medium transition-colors",
+                                    isActive("/history")
+                                        ? "underline underline-offset-4 decoration-primary text-foreground"
+                                        : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
                                 Lịch sử
                             </Link>
-                            <Link href="/profile" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                            <Link
+                                href="/profile"
+                                className={cn(
+                                    "text-sm font-medium transition-colors",
+                                    isActive("/profile")
+                                        ? "underline underline-offset-4 decoration-primary text-foreground"
+                                        : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
                                 Profile
                             </Link>
                         </>
@@ -101,20 +148,44 @@ export function Header() {
                                 </div>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem asChild>
-                                    <Link href="/profile" className="flex items-center gap-2 cursor-pointer">
+                                    <Link
+                                        href="/profile"
+                                        className={cn(
+                                            "flex items-center gap-2 cursor-pointer text-sm transition-colors",
+                                            isActive("/profile")
+                                                ? "underline underline-offset-2 decoration-primary text-foreground"
+                                                : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                    >
                                         <User className="h-4 w-4" />
                                         Profile
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
-                                    <Link href="/history" className="flex items-center gap-2 cursor-pointer">
+                                    <Link
+                                        href="/history"
+                                        className={cn(
+                                            "flex items-center gap-2 cursor-pointer text-sm transition-colors",
+                                            isActive("/history")
+                                                ? "underline underline-offset-2 decoration-primary text-foreground"
+                                                : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                    >
                                         <History className="h-4 w-4" />
                                         Lịch sử xem
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem asChild>
-                                    <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
+                                    <Link
+                                        href="/admin"
+                                        className={cn(
+                                            "flex items-center gap-2 cursor-pointer text-sm transition-colors",
+                                            isActive("/admin")
+                                                ? "underline underline-offset-2 decoration-primary text-foreground"
+                                                : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                    >
                                         <Settings className="h-4 w-4" />
                                         Admin Dashboard
                                     </Link>
