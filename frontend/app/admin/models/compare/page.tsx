@@ -24,11 +24,13 @@ import {
 } from "recharts";
 
 const COLORS = {
-    user_based_cf: "#6366f1",
-    item_based_cf: "#10b981",
-    hybrid: "#f59e0b",
-    neural_cf: "#ec4899",
+    user_based_cf: "#a7c7e7",
+    item_based_cf: "#bbf7d0",
+    hybrid: "#fde68a",
+    neural_cf: "#fbb6ce",
 };
+
+const PASTEL_COLORS = ["#fecaca", "#fed7aa", "#fde68a", "#d1fae5", "#bbf7d0", "#a7f3d0", "#a7c7e7", "#d8b4fe", "#fbb6ce", "#ddd6fe"];
 
 const customTooltipStyle = {
     backgroundColor: "rgba(17, 24, 39, 0.95)",
@@ -277,21 +279,44 @@ export default function ModelsComparePage() {
                         <div className="h-96">
                             <ResponsiveContainer width="100%" height="100%">
                                 <RadarChart data={radarData}>
-                                    <PolarGrid stroke="hsl(var(--border))" />
+                                    <defs>
+                                        {models.map((model, index) => (
+                                            <linearGradient key={`radarGradient${index}`} id={`radarGradient${index}`} x1="0" y1="0" x2="1" y2="1">
+                                                <stop
+                                                    offset="0%"
+                                                    stopColor={COLORS[model.name as keyof typeof COLORS] || PASTEL_COLORS[index % PASTEL_COLORS.length]}
+                                                    stopOpacity={0.8}
+                                                />
+                                                <stop
+                                                    offset="100%"
+                                                    stopColor={COLORS[model.name as keyof typeof COLORS] || PASTEL_COLORS[index % PASTEL_COLORS.length]}
+                                                    stopOpacity={0.1}
+                                                />
+                                            </linearGradient>
+                                        ))}
+                                    </defs>
+                                    <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.3} />
                                     <PolarAngleAxis dataKey="metric" tick={{ fill: "#e5e7eb", fontSize: 12 }} />
-                                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "#e5e7eb" }} />
+                                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "#e5e7eb", fontSize: 10 }} />
                                     {models.map((model, index) => (
                                         <Radar
                                             key={model.name}
-                                            name={model.name}
+                                            name={getModelDisplayName(model.name)}
                                             dataKey={model.name}
-                                            stroke={COLORS[model.name as keyof typeof COLORS] || "#999"}
-                                            fill={COLORS[model.name as keyof typeof COLORS] || "#999"}
-                                            fillOpacity={0.3}
+                                            stroke={COLORS[model.name as keyof typeof COLORS] || PASTEL_COLORS[index % PASTEL_COLORS.length]}
+                                            fill={`url(#radarGradient${index})`}
+                                            fillOpacity={0.4}
+                                            strokeWidth={2}
                                         />
                                     ))}
-                                    <Legend />
-                                    <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
+                                    <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                                    <Tooltip
+                                        contentStyle={{
+                                            ...customTooltipStyle,
+                                            background: "linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.95) 100%)",
+                                        }}
+                                        itemStyle={customTooltipContent}
+                                    />
                                 </RadarChart>
                             </ResponsiveContainer>
                         </div>
@@ -307,13 +332,31 @@ export default function ModelsComparePage() {
                         <div className="h-96">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={metricsData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                                    <defs>
+                                        <linearGradient id="colorRMSE" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#a7c7e7" stopOpacity={0.9} />
+                                            <stop offset="70%" stopColor="#a7c7e7" stopOpacity={0.7} />
+                                            <stop offset="100%" stopColor="#a7c7e7" stopOpacity={0} />
+                                        </linearGradient>
+                                        <linearGradient id="colorMAE" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#d8b4fe" stopOpacity={0.9} />
+                                            <stop offset="70%" stopColor="#d8b4fe" stopOpacity={0.7} />
+                                            <stop offset="100%" stopColor="#d8b4fe" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.3} />
                                     <XAxis dataKey="name" stroke="#9ca3af" tick={{ fill: "#e5e7eb", fontSize: 12 }} />
                                     <YAxis stroke="#9ca3af" tick={{ fill: "#e5e7eb" }} />
-                                    <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
-                                    <Legend />
-                                    <Bar dataKey="RMSE" fill="#6366f1" />
-                                    <Bar dataKey="MAE" fill="#8b5cf6" />
+                                    <Tooltip
+                                        contentStyle={{
+                                            ...customTooltipStyle,
+                                            background: "linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.95) 100%)",
+                                        }}
+                                        itemStyle={customTooltipContent}
+                                    />
+                                    <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                                    <Bar dataKey="RMSE" fill="url(#colorRMSE)" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="MAE" fill="url(#colorMAE)" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -329,13 +372,31 @@ export default function ModelsComparePage() {
                         <div className="h-96">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={metricsData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                                    <defs>
+                                        <linearGradient id="colorPrecision" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#bbf7d0" stopOpacity={0.9} />
+                                            <stop offset="70%" stopColor="#bbf7d0" stopOpacity={0.7} />
+                                            <stop offset="100%" stopColor="#bbf7d0" stopOpacity={0} />
+                                        </linearGradient>
+                                        <linearGradient id="colorRecall" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#fbb6ce" stopOpacity={0.9} />
+                                            <stop offset="70%" stopColor="#fbb6ce" stopOpacity={0.7} />
+                                            <stop offset="100%" stopColor="#fbb6ce" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.3} />
                                     <XAxis dataKey="name" stroke="#9ca3af" tick={{ fill: "#e5e7eb", fontSize: 12 }} />
                                     <YAxis stroke="#9ca3af" tick={{ fill: "#e5e7eb" }} />
-                                    <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
-                                    <Legend />
-                                    <Bar dataKey="Precision@K" fill="#10b981" />
-                                    <Bar dataKey="Recall@K" fill="#06b6d4" />
+                                    <Tooltip
+                                        contentStyle={{
+                                            ...customTooltipStyle,
+                                            background: "linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.95) 100%)",
+                                        }}
+                                        itemStyle={customTooltipContent}
+                                    />
+                                    <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                                    <Bar dataKey="Precision@K" fill="url(#colorPrecision)" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="Recall@K" fill="url(#colorRecall)" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
