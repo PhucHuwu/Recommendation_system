@@ -28,6 +28,7 @@ export interface AnimeCardProps {
     genres: string | string[]; // Support both formats
     episodes?: number;
     type?: string;
+    isRecommendation?: boolean;
 }
 
 export interface AnimeListParams {

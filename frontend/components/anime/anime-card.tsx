@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Film, Tv, Video, Star } from "lucide-react";
+import { Film, Tv, Video, Star, Sparkles } from "lucide-react";
 import type { AnimeCardProps } from "@/types/anime";
 
 function getTypeIcon(type?: string) {
@@ -33,7 +33,7 @@ function getGradientClass(name: string) {
     return gradients[index];
 }
 
-export function AnimeCard({ id, name, score, genres, episodes, type }: AnimeCardProps) {
+export function AnimeCard({ id, name, score, genres, episodes, type, isRecommendation }: AnimeCardProps) {
     // Handle both string (comma-separated) and array formats
     const genresArray: string[] =
         typeof genres === "string"
@@ -48,6 +48,9 @@ export function AnimeCard({ id, name, score, genres, episodes, type }: AnimeCard
     const displayGenres = genresArray.slice(0, 2);
     const TypeIcon = getTypeIcon(type);
     const gradientClass = getGradientClass(name);
+
+    const BadgeIcon = isRecommendation ? Sparkles : Star;
+    const badgeIconClass = cn("h-3 w-3", isRecommendation && "fill-current text-primary");
 
     return (
         <Link href={`/anime/${id}`}>
@@ -67,7 +70,7 @@ export function AnimeCard({ id, name, score, genres, episodes, type }: AnimeCard
                                     score < 6 && "bg-destructive text-destructive-foreground"
                                 )}
                             >
-                                <Star className="h-3 w-3" />
+                                <BadgeIcon className={badgeIconClass} />
                                 {score.toFixed(1)}
                             </Badge>
                         </div>

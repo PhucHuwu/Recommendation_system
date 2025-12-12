@@ -13,10 +13,13 @@ interface RecommendationListProps {
     items: (RecommendationResponse | Anime)[];
     loading?: boolean;
     showScrollButtons?: boolean;
+    // Optional external ref to control scrolling from parent
+    scrollContainerRefProp?: React.RefObject<HTMLDivElement | null>;
 }
 
-export function RecommendationList({ title, items, loading = false, showScrollButtons = true }: RecommendationListProps) {
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
+export function RecommendationList({ title, items, loading = false, showScrollButtons = true, scrollContainerRefProp }: RecommendationListProps) {
+    const localRef = useRef<HTMLDivElement | null>(null);
+    const scrollContainerRef = scrollContainerRefProp ?? localRef;
 
     const scroll = (direction: "left" | "right") => {
         if (scrollContainerRef.current) {
@@ -51,7 +54,7 @@ export function RecommendationList({ title, items, loading = false, showScrollBu
         <section className="space-y-4">
             <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">{title}</h2>
-                {showScrollButtons && items.length > 5 && (
+                {showScrollButtons && items.length > 5 && !scrollContainerRefProp && (
                     <div className="hidden md:flex items-center gap-2">
                         <Button variant="outline" size="icon" onClick={() => scroll("left")} className="h-8 w-8">
                             <ChevronLeft className="h-4 w-4" />
@@ -77,7 +80,15 @@ export function RecommendationList({ title, items, loading = false, showScrollBu
 
                     return (
                         <div key={`${animeId}-${index}`} className="w-48 flex-shrink-0">
-                            <AnimeCard id={animeId} name={name} score={score} genres={genres} episodes={episodes} type={type} />
+                            <AnimeCard
+                                id={animeId}
+                                name={name}
+                                score={score}
+                                genres={genres}
+                                episodes={episodes}
+                                type={type}
+                                isRecommendation={isRecommendation}
+                            />
                         </div>
                     );
                 })}

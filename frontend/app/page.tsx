@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { RecommendationList } from "@/components/recommendation/recommendation-list";
-import { Play, Sparkles, TrendingUp } from "lucide-react";
+import { Play, Sparkles, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "@/lib/api";
 import type { Anime } from "@/types/anime";
 import type { RecommendationResponse } from "@/types/api";
@@ -56,6 +56,15 @@ export default function HomePage() {
 
         fetchData();
     }, [isAuthenticated, token]);
+
+    const topScrollRef = useRef<HTMLDivElement>(null);
+
+    const scrollTop = (direction: "left" | "right") => {
+        if (topScrollRef.current) {
+            const amt = 300;
+            topScrollRef.current.scrollBy({ left: direction === "left" ? -amt : amt, behavior: "smooth" });
+        }
+    };
 
     return (
         <div className="min-h-screen">
@@ -134,11 +143,21 @@ export default function HomePage() {
                             <TrendingUp className="h-6 w-6 text-primary" />
                             <h2 className="text-xl font-semibold">Top Anime</h2>
                         </div>
-                        <Button variant="ghost" asChild>
-                            <Link href="/anime?sort=rating">Xem tất cả</Link>
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <div className="hidden md:flex items-center gap-1">
+                                <Button variant="outline" size="icon" onClick={() => scrollTop("left")}>
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <Button variant="outline" size="icon" onClick={() => scrollTop("right")}>
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <Button variant="ghost" asChild>
+                                <Link href="/anime?sort=rating">Xem tất cả</Link>
+                            </Button>
+                        </div>
                     </div>
-                    <RecommendationList title="" items={topAnimes} loading={loading} showScrollButtons={false} />
+                    <RecommendationList title="" items={topAnimes} loading={loading} showScrollButtons={true} scrollContainerRefProp={topScrollRef} />
                 </section>
 
                 {/* CTA for non-logged in users */}

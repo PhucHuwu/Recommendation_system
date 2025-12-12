@@ -34,9 +34,17 @@ export function Header() {
 
                 {/* Navigation */}
                 <nav className="hidden md:flex items-center gap-6">
+                    <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        Trang chủ
+                    </Link>
                     <Link href="/anime" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                         Anime
                     </Link>
+                    {isAuthenticated && (
+                        <Link href="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                            Admin
+                        </Link>
+                    )}
                     {isAuthenticated && (
                         <>
                             <Link href="/history" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
