@@ -28,7 +28,7 @@ import {
 } from "recharts";
 import { api } from "@/lib/api";
 
-const COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#ef4444", "#84cc16"];
+const COLORS = ["#a7c7e7", "#d8b4fe", "#fbb6ce", "#fed7aa", "#bbf7d0", "#fde68a", "#fecaca", "#ddd6fe"];
 
 const customTooltipStyle = {
     backgroundColor: "rgba(17, 24, 39, 0.95)", // dark bg với transparency
@@ -109,46 +109,46 @@ export default function VisualizationPage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={data?.rating_distribution || []}>
                                     <defs>
-                                        {/* Gradient definitions for each rating */}
+                                        {/* Gradient definitions for each rating with pastel colors */}
                                         <linearGradient id="colorRating1" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#ef4444" stopOpacity={0.9} />
-                                            <stop offset="100%" stopColor="#dc2626" stopOpacity={0.7} />
+                                            <stop offset="0%" stopColor="#fecaca" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#fecaca" stopOpacity={0.6} />
                                         </linearGradient>
                                         <linearGradient id="colorRating2" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#f97316" stopOpacity={0.9} />
-                                            <stop offset="100%" stopColor="#ea580c" stopOpacity={0.7} />
+                                            <stop offset="0%" stopColor="#fed7aa" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#fed7aa" stopOpacity={0.6} />
                                         </linearGradient>
                                         <linearGradient id="colorRating3" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.9} />
-                                            <stop offset="100%" stopColor="#d97706" stopOpacity={0.7} />
+                                            <stop offset="0%" stopColor="#fde68a" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#fde68a" stopOpacity={0.6} />
                                         </linearGradient>
                                         <linearGradient id="colorRating4" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.9} />
-                                            <stop offset="100%" stopColor="#d97706" stopOpacity={0.7} />
+                                            <stop offset="0%" stopColor="#fef3c7" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#fef3c7" stopOpacity={0.6} />
                                         </linearGradient>
                                         <linearGradient id="colorRating5" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#eab308" stopOpacity={0.9} />
-                                            <stop offset="100%" stopColor="#ca8a04" stopOpacity={0.7} />
+                                            <stop offset="0%" stopColor="#d1fae5" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#d1fae5" stopOpacity={0.6} />
                                         </linearGradient>
                                         <linearGradient id="colorRating6" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#84cc16" stopOpacity={0.9} />
-                                            <stop offset="100%" stopColor="#65a30d" stopOpacity={0.7} />
+                                            <stop offset="0%" stopColor="#bbf7d0" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#bbf7d0" stopOpacity={0.6} />
                                         </linearGradient>
                                         <linearGradient id="colorRating7" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#22c55e" stopOpacity={0.9} />
-                                            <stop offset="100%" stopColor="#16a34a" stopOpacity={0.7} />
+                                            <stop offset="0%" stopColor="#a7f3d0" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#a7f3d0" stopOpacity={0.6} />
                                         </linearGradient>
                                         <linearGradient id="colorRating8" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
-                                            <stop offset="100%" stopColor="#059669" stopOpacity={0.7} />
+                                            <stop offset="0%" stopColor="#b6d7ff" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#b6d7ff" stopOpacity={0.6} />
                                         </linearGradient>
                                         <linearGradient id="colorRating9" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.9} />
-                                            <stop offset="100%" stopColor="#0891b2" stopOpacity={0.7} />
+                                            <stop offset="0%" stopColor="#a7c7e7" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#a7c7e7" stopOpacity={0.6} />
                                         </linearGradient>
                                         <linearGradient id="colorRating10" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#6366f1" stopOpacity={0.9} />
-                                            <stop offset="100%" stopColor="#4f46e5" stopOpacity={0.7} />
+                                            <stop offset="0%" stopColor="#d8b4fe" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#d8b4fe" stopOpacity={0.6} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -198,8 +198,9 @@ export default function VisualizationPage() {
                                 <BarChart layout="vertical" data={data?.top_rated_animes || []}>
                                     <defs>
                                         <linearGradient id="colorTopRated" x1="0" y1="0" x2="1" y2="0">
-                                            <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.8} />
-                                            <stop offset="100%" stopColor="#6366f1" stopOpacity={1} />
+                                            <stop offset="0%" stopColor="#d8b4fe" stopOpacity={0.9} />
+                                            <stop offset="50%" stopColor="#c4b5fd" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="#a78bfa" stopOpacity={0.8} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -223,14 +224,14 @@ export default function VisualizationPage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart layout="vertical" data={data?.genre_frequency || []}>
                                     <defs>
-                                        <linearGradient id="colorGenre0" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#6366f1" stopOpacity={0.8} /><stop offset="100%" stopColor="#6366f1" stopOpacity={1} /></linearGradient>
-                                        <linearGradient id="colorGenre1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.8} /><stop offset="100%" stopColor="#8b5cf6" stopOpacity={1} /></linearGradient>
-                                        <linearGradient id="colorGenre2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#ec4899" stopOpacity={0.8} /><stop offset="100%" stopColor="#ec4899" stopOpacity={1} /></linearGradient>
-                                        <linearGradient id="colorGenre3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.8} /><stop offset="100%" stopColor="#f59e0b" stopOpacity={1} /></linearGradient>
-                                        <linearGradient id="colorGenre4" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#10b981" stopOpacity={0.8} /><stop offset="100%" stopColor="#10b981" stopOpacity={1} /></linearGradient>
-                                        <linearGradient id="colorGenre5" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#06b6d4" stopOpacity={0.8} /><stop offset="100%" stopColor="#06b6d4" stopOpacity={1} /></linearGradient>
-                                        <linearGradient id="colorGenre6" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#ef4444" stopOpacity={0.8} /><stop offset="100%" stopColor="#ef4444" stopOpacity={1} /></linearGradient>
-                                        <linearGradient id="colorGenre7" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#84cc16" stopOpacity={0.8} /><stop offset="100%" stopColor="#84cc16" stopOpacity={1} /></linearGradient>
+                                        <linearGradient id="colorGenre0" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#a7c7e7" stopOpacity={0.9} /><stop offset="100%" stopColor="#a7c7e7" stopOpacity={0.7} /></linearGradient>
+                                        <linearGradient id="colorGenre1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#d8b4fe" stopOpacity={0.9} /><stop offset="100%" stopColor="#d8b4fe" stopOpacity={0.7} /></linearGradient>
+                                        <linearGradient id="colorGenre2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#fbb6ce" stopOpacity={0.9} /><stop offset="100%" stopColor="#fbb6ce" stopOpacity={0.7} /></linearGradient>
+                                        <linearGradient id="colorGenre3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#fed7aa" stopOpacity={0.9} /><stop offset="100%" stopColor="#fed7aa" stopOpacity={0.7} /></linearGradient>
+                                        <linearGradient id="colorGenre4" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#bbf7d0" stopOpacity={0.9} /><stop offset="100%" stopColor="#bbf7d0" stopOpacity={0.7} /></linearGradient>
+                                        <linearGradient id="colorGenre5" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#fde68a" stopOpacity={0.9} /><stop offset="100%" stopColor="#fde68a" stopOpacity={0.7} /></linearGradient>
+                                        <linearGradient id="colorGenre6" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#fecaca" stopOpacity={0.9} /><stop offset="100%" stopColor="#fecaca" stopOpacity={0.7} /></linearGradient>
+                                        <linearGradient id="colorGenre7" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#ddd6fe" stopOpacity={0.9} /><stop offset="100%" stopColor="#ddd6fe" stopOpacity={0.7} /></linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                                     <XAxis type="number" stroke="#9ca3af" tick={{ fill: "#e5e7eb" }} tickFormatter={formatNumber} />
@@ -336,9 +337,9 @@ export default function VisualizationPage() {
                                             );
                                         }}
                                     >
-                                        <Cell fill="#ef4444" />
-                                        <Cell fill="#f59e0b" />
-                                        <Cell fill="#10b981" />
+                                        <Cell fill="#fbb6ce" />
+                                        <Cell fill="#fed7aa" />
+                                        <Cell fill="#bbf7d0" />
                                     </Pie>
                                     <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
                                 </PieChart>
@@ -358,8 +359,9 @@ export default function VisualizationPage() {
                                 <ScatterChart>
                                     <defs>
                                         <radialGradient id="colorScatter">
-                                            <stop offset="0%" stopColor="#ec4899" stopOpacity={0.8} />
-                                            <stop offset="100%" stopColor="#8b5cf6" stopOpacity={1} />
+                                            <stop offset="0%" stopColor="#fbb6ce" stopOpacity={0.9} />
+                                            <stop offset="50%" stopColor="#f9a8d4" stopOpacity={0.8} />
+                                            <stop offset="100%" stopColor="#d8b4fe" stopOpacity={1} />
                                         </radialGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -394,12 +396,12 @@ export default function VisualizationPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="overflow-x-auto">
-                            <table className="w-full border-collapse">
+                            <table className="w-full rounded-lg overflow-hidden shadow-sm" style={{borderSpacing: '4px', borderCollapse: 'separate'}}>
                                 <thead>
                                     <tr>
-                                        <th className="border p-2 bg-muted"></th>
+                                        <th className="p-3 bg-slate-800 text-slate-300 font-medium rounded-lg"></th>
                                         {data?.genre_frequency?.slice(0, 10).map((g: any) => (
-                                            <th key={g._id} className="border p-2 bg-muted text-xs">
+                                            <th key={g._id} className="p-3 bg-slate-800 text-xs font-medium text-slate-300 min-w-16 rounded-lg">
                                                 {g._id}
                                             </th>
                                         ))}
@@ -408,18 +410,27 @@ export default function VisualizationPage() {
                                 <tbody>
                                     {data?.genre_frequency?.slice(0, 10).map((g1: any) => (
                                         <tr key={g1._id}>
-                                            <td className="border p-2 bg-muted font-semibold text-xs">{g1._id}</td>
+                                            <td className="p-3 bg-slate-800 font-semibold text-xs text-slate-300 min-w-20 rounded-lg">{g1._id}</td>
                                             {data.genre_frequency.slice(0, 10).map((g2: any) => {
                                                 const value = data.genre_cooccurrence?.[g1._id]?.[g2._id] || 0;
                                                 const maxValue = 1000; // Adjust based on data
                                                 const intensity = Math.min(value / maxValue, 1);
+                                                
+                                                // Use pastel purple gradient suitable for dark theme
+                                                const backgroundColor = intensity === 0 
+                                                    ? 'rgba(30, 41, 59, 0.3)' // Dark slate for 0 values
+                                                    : `rgba(216, 180, 254, ${0.15 + intensity * 0.6})`; // Pastel purple with varying opacity for dark theme
+                                                
+                                                const textColor = intensity > 0.4 ? '#f1f5f9' : intensity > 0.2 ? '#d8b4fe' : '#94a3b8';
+                                                
                                                 return (
                                                     <td
                                                         key={g2._id}
-                                                        className="border p-2 text-center text-xs"
+                                                        className="p-3 text-center text-xs font-medium transition-all hover:brightness-110 rounded-lg"
                                                         style={{
-                                                            backgroundColor: `rgba(99, 102, 241, ${intensity})`,
-                                                            color: intensity > 0.5 ? "white" : "inherit",
+                                                            backgroundColor,
+                                                            color: textColor,
+                                                            boxShadow: intensity > 0.5 ? '0 1px 4px rgba(216, 180, 254, 0.3)' : '0 1px 2px rgba(0, 0, 0, 0.1)'
                                                         }}
                                                     >
                                                         {value}
