@@ -96,56 +96,59 @@ export default function AdminDashboardPage() {
                 </Card>
             </div>
 
-            {/* Top Genres */}
-            {stats?.top_genres && stats.top_genres.length > 0 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Top Genres</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-2">
-                            {stats.top_genres.slice(0, 10).map((item: any, index: number) => (
-                                <div key={item.genre} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
-                                        <span>{item.genre}</span>
+            {/* Top Genres & Rating Distribution Grid */}
+            <div className="grid gap-6 md:grid-cols-2">
+                {/* Top Genres */}
+                {stats?.top_genres && stats.top_genres.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Top Genres</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                {stats.top_genres.slice(0, 10).map((item: any, index: number) => (
+                                    <div key={item.genre} className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
+                                            <span>{item.genre}</span>
+                                        </div>
+                                        <span className="text-sm text-muted-foreground">{item.count.toLocaleString()} animes</span>
                                     </div>
-                                    <span className="text-sm text-muted-foreground">{item.count.toLocaleString()} animes</span>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
-            {/* Rating Distribution */}
-            {stats?.rating_distribution &&
-                (() => {
-                    // Calculate max count for percentage calculation
-                    const ratingCounts = Object.values(stats.rating_distribution) as number[];
-                    const maxCount = Math.max(...ratingCounts, 1);
+                {/* Rating Distribution */}
+                {stats?.rating_distribution &&
+                    (() => {
+                        // Calculate max count for percentage calculation
+                        const ratingCounts = Object.values(stats.rating_distribution) as number[];
+                        const maxCount = Math.max(...ratingCounts, 1);
 
-                    return (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Phân bố Rating (1-10)</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-2">
-                                    {Object.entries(stats.rating_distribution)
-                                        .sort(([a], [b]) => Number(a) - Number(b))
-                                        .map(([rating, count]: [string, any]) => (
-                                            <div key={rating} className="flex items-center gap-3">
-                                                <span className="w-8 text-sm font-medium text-right">{rating}★</span>
-                                                <Progress value={maxCount > 0 ? (count / maxCount) * 100 : 0} className="flex-1 h-6" />
-                                                <span className="w-12 text-sm text-muted-foreground text-right">{count.toLocaleString()}</span>
-                                            </div>
-                                        ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    );
-                })()}
+                        return (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Phân bố Rating (1-10)</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-2">
+                                        {Object.entries(stats.rating_distribution)
+                                            .sort(([a], [b]) => Number(a) - Number(b))
+                                            .map(([rating, count]: [string, any]) => (
+                                                <div key={rating} className="flex items-center gap-3">
+                                                    <span className="w-8 text-sm font-medium text-right">{rating}★</span>
+                                                    <Progress value={maxCount > 0 ? (count / maxCount) * 100 : 0} className="flex-1 h-6" />
+                                                    <span className="w-12 text-sm text-muted-foreground text-right">{count.toLocaleString()}</span>
+                                                </div>
+                                            ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })()}
+            </div>
         </div>
     );
 }
