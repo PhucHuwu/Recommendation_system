@@ -407,30 +407,6 @@ export default function VisualizationPage() {
                     </CardContent>
                 </Card>
 
-                {/* 9. User Engagement Funnel  */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Phễu tương tác người dùng</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="h-80">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={data?.user_engagement_funnel || []}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                                    <XAxis dataKey="stage" stroke="#9ca3af" tick={{ fill: "#e5e7eb", fontSize: 11 }} />
-                                    <YAxis stroke="#9ca3af" tick={{ fill: "#e5e7eb" }} />
-                                    <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
-                                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                                        <Cell fill="#6366f1" />
-                                        <Cell fill="#8b5cf6" />
-                                        <Cell fill="#ec4899" />
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </CardContent>
-                </Card>
-
                 {/* 10. Genre Co-occurrence Heatmap (Custom) */}
                 <Card className="lg:col-span-2">
                     <CardHeader>
