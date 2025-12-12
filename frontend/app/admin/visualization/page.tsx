@@ -156,7 +156,7 @@ export default function VisualizationPage() {
                                         dataKey="_id"
                                         stroke="#9ca3af"
                                         tick={{ fill: "#e5e7eb", fontSize: 13, fontWeight: 600 }}
-                                        label={{ value: "⭐ Rating", position: "insideBottom", offset: -5, fill: "#e5e7eb", fontSize: 14 }}
+                                        label={{ value: "Rating", position: "insideBottom", offset: -5, fill: "#e5e7eb", fontSize: 14 }}
                                     />
                                     <YAxis
                                         stroke="#9ca3af"
@@ -174,7 +174,7 @@ export default function VisualizationPage() {
                                         contentStyle={customTooltipStyle}
                                         itemStyle={customTooltipContent}
                                         formatter={(value: any) => [formatNumber(value), "Số đánh giá"]}
-                                        labelFormatter={(label) => `⭐ Rating ${label}`}
+                                        labelFormatter={(label) => `Rating ${label}`}
                                     />
                                     <Bar dataKey="count" radius={[8, 8, 0, 0]} animationDuration={1000} animationBegin={0}>
                                         {(data?.rating_distribution || []).map((entry: any, index: number) => (
@@ -196,11 +196,17 @@ export default function VisualizationPage() {
                         <div className="h-80">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart layout="vertical" data={data?.top_rated_animes || []}>
+                                    <defs>
+                                        <linearGradient id="colorTopRated" x1="0" y1="0" x2="1" y2="0">
+                                            <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                                            <stop offset="100%" stopColor="#6366f1" stopOpacity={1} />
+                                        </linearGradient>
+                                    </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                                     <XAxis type="number" stroke="#9ca3af" tick={{ fill: "#e5e7eb" }} tickFormatter={formatNumber} />
                                     <YAxis type="category" dataKey="anime_name" width={150} stroke="#9ca3af" tick={{ fill: "#e5e7eb", fontSize: 11 }} />
                                     <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
-                                    <Bar dataKey="rating_count" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                                    <Bar dataKey="rating_count" fill="url(#colorTopRated)" radius={[0, 4, 4, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -216,13 +222,23 @@ export default function VisualizationPage() {
                         <div className="h-80">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart layout="vertical" data={data?.genre_frequency || []}>
+                                    <defs>
+                                        <linearGradient id="colorGenre0" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#6366f1" stopOpacity={0.8} /><stop offset="100%" stopColor="#6366f1" stopOpacity={1} /></linearGradient>
+                                        <linearGradient id="colorGenre1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.8} /><stop offset="100%" stopColor="#8b5cf6" stopOpacity={1} /></linearGradient>
+                                        <linearGradient id="colorGenre2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#ec4899" stopOpacity={0.8} /><stop offset="100%" stopColor="#ec4899" stopOpacity={1} /></linearGradient>
+                                        <linearGradient id="colorGenre3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.8} /><stop offset="100%" stopColor="#f59e0b" stopOpacity={1} /></linearGradient>
+                                        <linearGradient id="colorGenre4" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#10b981" stopOpacity={0.8} /><stop offset="100%" stopColor="#10b981" stopOpacity={1} /></linearGradient>
+                                        <linearGradient id="colorGenre5" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#06b6d4" stopOpacity={0.8} /><stop offset="100%" stopColor="#06b6d4" stopOpacity={1} /></linearGradient>
+                                        <linearGradient id="colorGenre6" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#ef4444" stopOpacity={0.8} /><stop offset="100%" stopColor="#ef4444" stopOpacity={1} /></linearGradient>
+                                        <linearGradient id="colorGenre7" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#84cc16" stopOpacity={0.8} /><stop offset="100%" stopColor="#84cc16" stopOpacity={1} /></linearGradient>
+                                    </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                                     <XAxis type="number" stroke="#9ca3af" tick={{ fill: "#e5e7eb" }} tickFormatter={formatNumber} />
                                     <YAxis type="category" dataKey="_id" width={100} stroke="#9ca3af" tick={{ fill: "#e5e7eb", fontSize: 12 }} />
                                     <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
                                     <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                                         {(data?.genre_frequency || []).map((entry: any, index: number) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            <Cell key={`cell-${index}`} fill={`url(#colorGenre${index % 8})`} />
                                         ))}
                                     </Bar>
                                 </BarChart>
@@ -331,27 +347,7 @@ export default function VisualizationPage() {
                     </CardContent>
                 </Card>
 
-                {/* 6. Score Distribution - Area Chart */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Phân bố điểm số Anime</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="h-80">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={data?.score_distribution || []}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                                    <XAxis dataKey="_id" stroke="#9ca3af" tick={{ fill: "#e5e7eb" }} />
-                                    <YAxis stroke="#9ca3af" tick={{ fill: "#e5e7eb" }} />
-                                    <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
-                                    <Area type="monotone" dataKey="count" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.6} />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* 7. Score vs Rating Count Scatter */}
+                {/* 6. Score vs Rating Count Scatter */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Điểm số vs Số lượng đánh giá</CardTitle>
@@ -360,6 +356,12 @@ export default function VisualizationPage() {
                         <div className="h-80">
                             <ResponsiveContainer width="100%" height="100%">
                                 <ScatterChart>
+                                    <defs>
+                                        <radialGradient id="colorScatter">
+                                            <stop offset="0%" stopColor="#ec4899" stopOpacity={0.8} />
+                                            <stop offset="100%" stopColor="#8b5cf6" stopOpacity={1} />
+                                        </radialGradient>
+                                    </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                                     <XAxis
                                         type="number"
@@ -378,36 +380,14 @@ export default function VisualizationPage() {
                                         label={{ value: "Điểm", angle: -90, position: "insideLeft", fill: "#e5e7eb" }}
                                     />
                                     <Tooltip cursor={{ strokeDasharray: "3 3" }} contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
-                                    <Scatter data={data?.episode_rating_scatter || []} fill="#ec4899" />
+                                    <Scatter data={data?.episode_rating_scatter || []} fill="url(#colorScatter)" />
                                 </ScatterChart>
                             </ResponsiveContainer>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* 8. Top Anime Radar Chart */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Top 5 Anime - So sánh đa chiều</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="h-80">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <RadarChart data={data?.top_anime_radar || []}>
-                                    <PolarGrid stroke="hsl(var(--border))" />
-                                    <PolarAngleAxis dataKey="name" tick={{ fill: "#e5e7eb", fontSize: 10 }} />
-                                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "#e5e7eb" }} />
-                                    <Radar name="Score" dataKey="score" stroke="#6366f1" fill="#6366f1" fillOpacity={0.5} />
-                                    <Radar name="Popularity" dataKey="popularity" stroke="#10b981" fill="#10b981" fillOpacity={0.5} />
-                                    <Legend />
-                                    <Tooltip contentStyle={customTooltipStyle} itemStyle={customTooltipContent} />
-                                </RadarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* 10. Genre Co-occurrence Heatmap (Custom) */}
+                {/* 7. Genre Co-occurrence Heatmap (Custom) */}
                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Ma trận đồng xuất hiện thể loại</CardTitle>
