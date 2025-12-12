@@ -246,45 +246,6 @@ def get_models():
     return jsonify({'models': models}), 200
 
 
-@admin_bp.route('/models/select', methods=['POST'])
-def select_model():
-    """Select which model to use for recommendations"""
-    data = request.get_json()
-    
-    if not data or 'model_name' not in data:
-        return jsonify({'error': 'model_name is required'}), 400
-    
-    model_name = data['model_name']
-    valid_models = ['user_based_cf', 'item_based_cf', 'hybrid', 'neural_cf']
-    
-    if model_name not in valid_models:
-        return jsonify({'error': f'Invalid model. Choose from: {valid_models}'}), 400
-    
-    # Update recommendation service
-    from app.services.recommendation_service import get_recommendation_service
-    rec_service = get_recommendation_service()
-    
-    if not rec_service.set_active_model(model_name):
-        return jsonify({'error': f'Could not load model {model_name}'}), 500
-    
-    db = get_db()
-    
-    # Deactivate all models in registry
-    db.model_registry.update_many({}, {'$set': {'is_active': False}})
-    
-    # Activate selected model in registry
-    db.model_registry.update_one(
-        {'model_name': model_name},
-        {
-            '$set': {'is_active': True, 'activated_at': datetime.utcnow()},
-            '$setOnInsert': {'model_name': model_name, 'created_at': datetime.utcnow()}
-        },
-        upsert=True
-    )
-    
-    return jsonify({'message': f'Model {model_name} is now active'}), 200
-
-
 @admin_bp.route('/models/train', methods=['POST'])
 def train_model():
     """Trigger model training in background"""

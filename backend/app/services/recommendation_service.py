@@ -245,7 +245,7 @@ def get_recommendation_service() -> RecommendationService:
         _recommendation_service = RecommendationService()
         # Try to load all models on startup
         _recommendation_service.load_all_models()
-        # Set default active model
-        _recommendation_service.set_active_model('user_based_cf')
+        # Set default active model to neural_cf (best performing model)
+        _recommendation_service.set_active_model('neural_cf')
     
     return _recommendation_service

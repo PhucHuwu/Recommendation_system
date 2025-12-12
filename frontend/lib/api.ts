@@ -328,14 +328,6 @@ export const api = {
         return response;
     },
 
-    selectModel: async (modelName: string) => {
-        const response = await fetchApi<{ message: string }>("/admin/models/select", {
-            method: "POST",
-            body: JSON.stringify({ model_name: modelName }),
-        });
-        return response;
-    },
-
     trainModel: async (modelName: string) => {
         const response = await fetchApi<{ message: string; job_id: string; status: string }>("/admin/models/train", {
             method: "POST",

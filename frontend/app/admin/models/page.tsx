@@ -79,23 +79,6 @@ export default function ModelsPage() {
         }
     };
 
-    const activeModel = models.find((m) => m.is_active);
-
-    const handleActivateModel = async (modelName: string) => {
-        setActivating(true);
-        setMessage("");
-        try {
-            await api.selectModel(modelName);
-            setMessage(`Model ${modelName} đã được kích hoạt thành công!`);
-            await fetchModels();
-        } catch (error) {
-            console.error("Failed to activate model:", error);
-            setMessage("Lỗi khi kích hoạt model");
-        } finally {
-            setActivating(false);
-        }
-    };
-
     const handleTrainClick = (modelName: string) => {
         setSelectedModel(modelName);
         setTrainingDialogOpen(true);
@@ -176,31 +159,6 @@ export default function ModelsPage() {
                 </Button>
             </div>
 
-            {/* Success Message */}
-            {message && (
-                <Alert>
-                    <CheckCircle2 className="h-4 w-4" />
-                    <AlertDescription>{message}</AlertDescription>
-                </Alert>
-            )}
-
-            {/* Active Model Info */}
-            {activeModel && (
-                <Alert className="bg-primary/10 border-primary/20">
-                    <CheckCircle2 className="h-4 w-4 text-primary" />
-                    <AlertDescription className="flex items-center justify-between">
-                        <span>
-                            Model đang active: <strong>{activeModel.display_name || activeModel.name}</strong>
-                        </span>
-                        {activeModel.metrics?.rmse && (
-                            <Badge variant="default" className="bg-primary">
-                                RMSE: {activeModel.metrics.rmse.toFixed(4)}
-                            </Badge>
-                        )}
-                    </AlertDescription>
-                </Alert>
-            )}
-
             {/* Training Progress */}
             {trainingStatus && trainingStatus.status !== "completed" && (
                 <Card>
@@ -240,8 +198,7 @@ export default function ModelsPage() {
                                 <TableHead className="text-right">Coverage ↑</TableHead>
                                 <TableHead className="text-right">Diversity ↑</TableHead>
                                 <TableHead className="text-right">Novelty ↑</TableHead>
-                                <TableHead>Training Status</TableHead>
-                                <TableHead>Trạng thái</TableHead>
+                                <TableHead className="text-right">Training Status</TableHead>
                                 <TableHead className="text-right">Hành động</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -265,20 +222,12 @@ export default function ModelsPage() {
                                         {model.metrics?.diversity ? model.metrics.diversity.toFixed(4) : "-"}
                                     </TableCell>
                                     <TableCell className="text-right font-mono">{model.metrics?.novelty ? model.metrics.novelty.toFixed(2) : "-"}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-right">
                                         <Badge variant={model.status === "trained" ? "default" : "secondary"}>{model.status || "not_trained"}</Badge>
                                     </TableCell>
-                                    <TableCell>
-                                        {model.is_active ? <Badge className="bg-success">Active</Badge> : <Badge variant="secondary">Inactive</Badge>}
-                                    </TableCell>
+
                                     <TableCell className="text-right">
                                         <div className="flex gap-2 justify-end">
-                                            {!model.is_active && model.status === "trained" && (
-                                                <Button size="sm" variant="outline" onClick={() => handleActivateModel(model.name)} disabled={activating}>
-                                                    <Zap className="h-4 w-4 mr-1" />
-                                                    Kích hoạt
-                                                </Button>
-                                            )}
                                             <Button size="sm" variant="outline" onClick={() => handleTrainClick(model.name)} disabled={!!trainingJobId}>
                                                 <Play className="h-4 w-4 mr-1" />
                                                 Train

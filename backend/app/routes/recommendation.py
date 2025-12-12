@@ -37,10 +37,9 @@ def get_recommendations():
     
     db = get_db()
     
-    # Get active model if not specified
+    # Use neural_cf as default if not specified (best performing model)
     if not model:
-        active_model = db.model_registry.find_one({'is_active': True})
-        model = active_model['model_name'] if active_model else 'user_based_cf'
+        model = 'neural_cf'
     
     # Get recommendation service
     rec_service = get_recommendation_service()

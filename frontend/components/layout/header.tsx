@@ -9,7 +9,7 @@ import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, User, LogOut, History, Settings, Film } from "lucide-react";
+import { Search, User, LogOut, History, Settings, Film, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -64,20 +64,18 @@ export function Header() {
                         Anime
                     </Link>
                     {isAuthenticated && (
-                        <Link
-                            href="/admin"
-                            className={cn(
-                                "text-sm font-medium transition-colors",
-                                isActive("/admin")
-                                    ? "underline underline-offset-4 decoration-primary text-foreground"
-                                    : "text-muted-foreground hover:text-foreground"
-                            )}
-                        >
-                            Admin
-                        </Link>
-                    )}
-                    {isAuthenticated && (
                         <>
+                            <Link
+                                href="/recommendations"
+                                className={cn(
+                                    "text-sm font-medium transition-colors",
+                                    isActive("/recommendations")
+                                        ? "underline underline-offset-4 decoration-primary text-foreground"
+                                        : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
+                                Gợi ý
+                            </Link>
                             <Link
                                 href="/history"
                                 className={cn(
@@ -99,6 +97,17 @@ export function Header() {
                                 )}
                             >
                                 Profile
+                            </Link>
+                            <Link
+                                href="/admin"
+                                className={cn(
+                                    "text-sm font-medium transition-colors",
+                                    isActive("/admin")
+                                        ? "underline underline-offset-4 decoration-primary text-foreground"
+                                        : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
+                                Admin
                             </Link>
                         </>
                     )}
@@ -159,6 +168,20 @@ export function Header() {
                                     >
                                         <User className="h-4 w-4" />
                                         Profile
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link
+                                        href="/recommendations"
+                                        className={cn(
+                                            "flex items-center gap-2 cursor-pointer text-sm transition-colors",
+                                            isActive("/recommendations")
+                                                ? "underline underline-offset-2 decoration-primary text-foreground"
+                                                : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                    >
+                                        <Sparkles className="h-4 w-4" />
+                                        Gợi ý
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
