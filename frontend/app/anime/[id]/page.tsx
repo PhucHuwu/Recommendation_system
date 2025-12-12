@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RatingStars } from "@/components/anime/rating-stars";
 import { PageLoading } from "@/components/ui/loading";
-import { Star, Users, Clock, ArrowLeft, Tv, Video, Film } from "lucide-react";
+import { Star, Users, Clock, ArrowLeft, Tv, Video, Film, Sparkles } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -59,7 +59,7 @@ export default function AnimeDetailPage() {
                 const response = await api.getAnime(animeId);
                 setAnime(response.anime);
 
-                // Fetch similar animes (using content-based)
+                // Fetch similar animes (using vector-based content similarity)
                 try {
                     const similarResponse = await api.getSimilarAnimes(animeId, 12, true);
                     setSimilarAnimes(similarResponse.similar_animes || []);
@@ -280,7 +280,13 @@ export default function AnimeDetailPage() {
             {/* Similar Anime Section */}
             {similarAnimes.length > 0 && (
                 <section className="container mx-auto px-4 py-8">
-                    <h2 className="text-2xl font-bold mb-6">Anime tương tự</h2>
+                    <div className="flex items-center gap-3 mb-4">
+                        <Sparkles className="h-5 w-5 text-amber-500" />
+                        <h2 className="text-2xl font-bold">Anime tương tự</h2>
+                        <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
+                            Item-Based CF
+                        </Badge>
+                    </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                         {similarAnimes.map((similar) => (
                             <Link key={similar.anime_id} href={`/anime/${similar.anime_id}`} className="group">

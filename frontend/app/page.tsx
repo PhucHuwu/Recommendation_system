@@ -115,7 +115,7 @@ export default function HomePage() {
             {/* Content Sections */}
             <div className="container mx-auto px-4 py-12 space-y-12">
                 {/* Recommendations (only for logged in users) */}
-                {isAuthenticated && <RecommendationList title={`Gợi ý cho ${user?.username || "bạn"}`} items={recommendations} loading={loading} />}
+                {isAuthenticated && <RecommendationList title={`Gợi ý dành riêng cho bạn`} items={recommendations} loading={loading} />}
 
                 {/* Recently Watched (only for logged in users) */}
                 {isAuthenticated && recentlyWatched.length > 0 && (
