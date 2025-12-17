@@ -29,7 +29,7 @@ matplotlib==3.8.2
 seaborn==0.13.0
 
 # Dataset
-kagglehub==0.2.5
+kagglehub==0.3.13
 
 # Utils
 tqdm==4.66.1
